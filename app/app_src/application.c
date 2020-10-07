@@ -1258,6 +1258,9 @@ static void cmdTest(char* cmd){
             __delay_ms(60);
             testcase = eeprom_rd_byte(0xAAAA);
             break;
+        case RADVER:
+            printf("RADIO VER %u\r\n", (uint8_t)PHY_Get_Radio_Ver());
+            break;
         default:
             printf("NOT OK %u\r\n", ILLEGALPARAMETER);
     }

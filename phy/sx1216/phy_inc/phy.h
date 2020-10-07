@@ -398,6 +398,7 @@ inline int8_t PHY_Get_Packet_Rssi_Threshold(void);
 inline void PHY_Get_Packet_Rssi_Threshold_Limits(int8_t*, int8_t*);
 inline uint8_t PHYGetCadCounter(void);
 inline void PHYReSetCadCounter(void);
+inline uint8_t PHY_Get_Radio_Ver(void);
 
 void readAllReg(void);
 

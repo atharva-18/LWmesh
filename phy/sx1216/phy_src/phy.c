@@ -23,6 +23,7 @@ static int8_t rssi_debug = -65;
 static uint8_t phyRxBuffer[128];
 static uint8_t phyTxBuffer[128];
 static uint8_t phyTxSize;
+static uint8_t radio_version = 0;
 extern uint16_t pan_id;
 
 static void SX1276ReadBuffer( uint8_t addr, uint8_t *buffer, uint8_t size );
@@ -449,9 +450,8 @@ void initRadio(void)
     uint8_t version;
     uint16_t wideRSSI;
     //Read the radio version
-    version = SX1276Read(REG_LR_VERSION);
-    version++;
-	(void) version; //Suppress static analysis warning
+    radio_version = SX1276Read(REG_LR_VERSION);
+    
     SX1276Write(REG_LR_OPMODE,0x00);  //Sleep mode and high frequency register
     SX1276Write(REG_LR_OPMODE,RFLR_OPMODE_LONGRANGEMODE_ON);  //LoRa mode    
     
@@ -879,6 +879,10 @@ inline uint8_t PHYGetCadCounter(void){
 }
 inline void PHYReSetCadCounter(void){
     cadCounter = 0;
+}
+
+inline uint8_t PHY_Get_Radio_Ver(void){
+    return radio_version;
 }
 /******************************************************************************/
 void readAllReg(void)
