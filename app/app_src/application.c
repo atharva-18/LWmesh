@@ -1812,7 +1812,7 @@ void bootLoadApplication(void)
     read_only_mb_regs[RO_FW_VER]  = FirmwareVersionMajor*100 + 
                                     FirmwareVersionMinor;
     read_only_mb_regs[RO_REGION]  = NA;
-    read_only_mb_regs[RO_MODE]    = MODE_GetValue()? ROUTER:ENDDEVICE;
+    read_only_mb_regs[RO_MODE]    = MODE_GetValue()? ENDDEVICE:ROUTER;
     read_only_mb_regs[RO_TX_MSG_ID]   = 0xFFFF;
     read_only_mb_regs[RO_SADDR]       = (currentAddr0 << 8) | currentAddr1;
     read_only_mb_regs[RO_ADDR_DEBUG1] = 0xAA55;
