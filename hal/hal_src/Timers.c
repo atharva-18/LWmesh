@@ -15,7 +15,7 @@ Copyright 2020 Samuel Ramrajkar
 */
 //Handlers for all the timer ISRs
 #include "Timers.h"
-#include "phy.h"
+#include "sx1276.h"
 #include "application.h"
 #include "led.h"
 #include "uart_default_control.h"

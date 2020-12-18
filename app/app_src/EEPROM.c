@@ -17,6 +17,7 @@ Copyright 2020 Samuel Ramrajkar
 #include "EEPROM.h"
 #include "application.h"
 #include "phy.h"
+#include "sx1276.h"
 
 uint8_t DATAEE_ReadByte_Platform(uint16_t addr){
     uint8_t copy1, copy2, copy3;

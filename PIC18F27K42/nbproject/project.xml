@@ -32,6 +32,10 @@
                 <sourceRootElem>../memory/eeprom/inc</sourceRootElem>
                 <sourceRootElem>../memory/eeprom/eeprom_inc</sourceRootElem>
                 <sourceRootElem>../memory/eeprom/eeprom_src</sourceRootElem>
+                <sourceRootElem>../phy/phy_inc</sourceRootElem>
+                <sourceRootElem>../phy/sx1276/sx1276_inc</sourceRootElem>
+                <sourceRootElem>../phy/phy_src</sourceRootElem>
+                <sourceRootElem>../phy/sx1276/sx1276_src</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
