@@ -16,6 +16,8 @@ Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
 
 #include "phy.h"
 #include "sx1276.h"
+#include "sx1280.h"
+#include "sx1280-hal.h"
 #include "Timers.h"
 #include "led.h"
 #include <stdlib.h>
@@ -23,6 +25,10 @@ Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
 /******************************************************************************/
 //LWmesh phy interface
 void PHY_Init(void){
+    volatile uint16_t rad_ver;
+    SX1280HalReset( );
+    rad_ver = SX1280GetFirmwareVersion();
+    (void) rad_ver;
     radio_state_var = RAD_RESET_LOW;
 }
 
