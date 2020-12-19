@@ -16,7 +16,8 @@ Maintainer: Miguel Luis, Matthieu Verdy and Benjamin Boulet
 #ifndef __SX1280_HAL_H__
 #define __SX1280_HAL_H__
 
-#include "hw.h"
+#include "mcc.h"
+#include "sx1280.h"
 
 /*!
  * * \brief Define which DIOs are connected 

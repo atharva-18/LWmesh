@@ -13,11 +13,12 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 
 Maintainer: Miguel Luis, Matthieu Verdy and Benjamin Boulet
 */
-#include "hw.h"
+#include "mcc.h"
 #include "sx1280-hal.h"
 #include "radio.h"
 #include <string.h>
 
+#define RADIO_DIO1_ENABLE
 /*!
  * \brief Define the size of tx and rx hal buffers
  *
@@ -27,7 +28,7 @@ Maintainer: Miguel Luis, Matthieu Verdy and Benjamin Boulet
  * \warning The application must ensure the maximal useful size to be much lower
  *          than the MAX_HAL_BUFFER_SIZE
  */
-#define MAX_HAL_BUFFER_SIZE   0xFFF
+#define MAX_HAL_BUFFER_SIZE   0x7F
 
 #define IRQ_HIGH_PRIORITY  0
 
@@ -110,7 +111,9 @@ const struct Radio_s Radio =
 };
 
 static uint8_t halTxBuffer[MAX_HAL_BUFFER_SIZE] = {0x00};
+#if 0
 static uint8_t halRxBuffer[MAX_HAL_BUFFER_SIZE] = {0x00};
+#endif
 
 /*!
  * \brief Used to block execution waiting for low state on radio busy pin.
@@ -118,7 +121,7 @@ static uint8_t halRxBuffer[MAX_HAL_BUFFER_SIZE] = {0x00};
  */
 void SX1280HalWaitOnBusy( void )
 {
-    while( HAL_GPIO_ReadPin( RADIO_BUSY_PORT, RADIO_BUSY_PIN ) == 1 );
+    while( 1 == DIO0_GetValue() );
 }
 
 void SX1280HalInit( DioIrqHandler **irqHandlers )
@@ -129,6 +132,7 @@ void SX1280HalInit( DioIrqHandler **irqHandlers )
 
 void SX1280HalIoIrqInit( DioIrqHandler **irqHandlers )
 {
+#if 0
 #if( RADIO_DIO1_ENABLE )
     GpioSetIrq( RADIO_DIO1_GPIO_Port, RADIO_DIO1_Pin, IRQ_HIGH_PRIORITY, irqHandlers[0] );
 #endif
@@ -141,19 +145,21 @@ void SX1280HalIoIrqInit( DioIrqHandler **irqHandlers )
 #if( !RADIO_DIO1_ENABLE && !RADIO_DIO2_ENABLE && !RADIO_DIO3_ENABLE )
 #error "Please define a DIO" 
 #endif
+#endif
 }
 
 void SX1280HalReset( void )
 {
-    HAL_Delay( 20 );
-    GpioWrite( RADIO_nRESET_PORT, RADIO_nRESET_PIN, 0 );
-    HAL_Delay( 50 );
-    GpioWrite( RADIO_nRESET_PORT, RADIO_nRESET_PIN, 1 );
-    HAL_Delay( 20 );
+    __delay_ms(20);
+    RADRST_SetLow();
+    __delay_ms(50);
+    RADRST_SetHigh();
+    __delay_ms(20);
 }
 
 void SX1280HalClearInstructionRam( void )
 {
+#if 0
     // Clearing the instruction RAM is writing 0x00s on every bytes of the
     // instruction RAM
     uint16_t halSize = 3 + IRAM_SIZE;
@@ -174,41 +180,30 @@ void SX1280HalClearInstructionRam( void )
     GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
 
     SX1280HalWaitOnBusy( );
+#endif
 }
 
 void SX1280HalWakeup( void )
 {
-    __disable_irq( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
+    NSS_SetLow();
     uint16_t halSize = 2;
     halTxBuffer[0] = RADIO_GET_STATUS;
     halTxBuffer[1] = 0x00;
-    SpiIn( halTxBuffer, halSize );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
-
+    SPI1_WriteBlock( halTxBuffer, halSize );
+    NSS_SetHigh();
     // Wait for chip to be ready.
     SX1280HalWaitOnBusy( );
-
-    __enable_irq( );
 }
 
 void SX1280HalWriteCommand( RadioCommands_t command, uint8_t *buffer, uint16_t size )
 {
-    uint16_t halSize  = size + 1;
-    SX1280HalWaitOnBusy( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
+    uint16_t halSize  = size + 1U;
     halTxBuffer[0] = command;
-    memcpy( halTxBuffer + 1, ( uint8_t * )buffer, size * sizeof( uint8_t ) );
-
-    SpiIn( halTxBuffer, halSize );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
-
+    memcpy( halTxBuffer + 1U, ( uint8_t * )buffer, size * sizeof( uint8_t ) );
+    SX1280HalWaitOnBusy( );
+    NSS_SetLow();
+    SPI1_WriteBlock( halTxBuffer, halSize );
+    NSS_SetHigh();
     if( command != RADIO_SET_SLEEP )
     {
         SX1280HalWaitOnBusy( );
@@ -217,24 +212,16 @@ void SX1280HalWriteCommand( RadioCommands_t command, uint8_t *buffer, uint16_t s
 
 void SX1280HalReadCommand( RadioCommands_t command, uint8_t *buffer, uint16_t size )
 {
-    uint16_t halSize = 2 + size;
+    uint16_t halSize = 2U + size;
     halTxBuffer[0] = command;
     halTxBuffer[1] = 0x00;
-    for( uint16_t index = 0; index < size; index++ )
-    {
-        halTxBuffer[2+index] = 0x00;
-    }
+    memset(halTxBuffer + 2U, 0, size);
 
     SX1280HalWaitOnBusy( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
-    SpiInOut( halTxBuffer, halRxBuffer, halSize );
-
-    memcpy( buffer, halRxBuffer + 2, size );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
-
+    NSS_SetLow();
+    SPI1_ExchangeBlock( halTxBuffer, halSize);
+    NSS_SetHigh();
+    memcpy( buffer, halTxBuffer + 2, size );
     SX1280HalWaitOnBusy( );
 }
 
@@ -244,16 +231,12 @@ void SX1280HalWriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
     halTxBuffer[0] = RADIO_WRITE_REGISTER;
     halTxBuffer[1] = ( address & 0xFF00 ) >> 8;
     halTxBuffer[2] = address & 0x00FF;
-    memcpy( halTxBuffer + 3, buffer, size );
+    memcpy( halTxBuffer + 3, buffer, size);
 
     SX1280HalWaitOnBusy( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
-    SpiIn( halTxBuffer, halSize );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
-
+    NSS_SetLow();
+    SPI1_WriteBlock( halTxBuffer, halSize );
+    NSS_SetHigh();
     SX1280HalWaitOnBusy( );
 }
 
@@ -269,20 +252,13 @@ void SX1280HalReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
     halTxBuffer[1] = ( address & 0xFF00 ) >> 8;
     halTxBuffer[2] = address & 0x00FF;
     halTxBuffer[3] = 0x00;
-    for( uint16_t index = 0; index < size; index++ )
-    {
-        halTxBuffer[4+index] = 0x00;
-    }
-
+    memset(halTxBuffer[4], 0U, size);
+    
     SX1280HalWaitOnBusy( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
-    SpiInOut( halTxBuffer, halRxBuffer, halSize );
-
-    memcpy( buffer, halRxBuffer + 4, size );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
+    NSS_SetLow();
+    SPI1_ExchangeBlock( halTxBuffer, halSize );
+    memcpy( buffer, halTxBuffer + 4, size );
+    NSS_SetHigh();
 
     SX1280HalWaitOnBusy( );
 }
@@ -290,70 +266,57 @@ void SX1280HalReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
 uint8_t SX1280HalReadRegister( uint16_t address )
 {
     uint8_t data;
-
     SX1280HalReadRegisters( address, &data, 1 );
-
     return data;
 }
 
 void SX1280HalWriteBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
 {
-    uint16_t halSize = size + 2;
+    uint16_t halSize = size + 2U;
     halTxBuffer[0] = RADIO_WRITE_BUFFER;
     halTxBuffer[1] = offset;
-    memcpy( halTxBuffer + 2, buffer, size );
+    memcpy( halTxBuffer + 2U, buffer, size );
 
     SX1280HalWaitOnBusy( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
-    SpiIn( halTxBuffer, halSize );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
-
+    NSS_SetLow();
+    SPI1_WriteBlock( halTxBuffer, halSize );
+    NSS_SetHigh();
     SX1280HalWaitOnBusy( );
 }
 
 void SX1280HalReadBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
 {
-    uint16_t halSize = size + 3;
+    uint16_t halSize = size + 3U;
     halTxBuffer[0] = RADIO_READ_BUFFER;
     halTxBuffer[1] = offset;
     halTxBuffer[2] = 0x00;
-    for( uint16_t index = 0; index < size; index++ )
-    {
-        halTxBuffer[3+index] = 0x00;
-    }
-
+    memset(halTxBuffer + 3U, 0 , size);
+    
     SX1280HalWaitOnBusy( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
-    SpiInOut( halTxBuffer, halRxBuffer, halSize );
-
-    memcpy( buffer, halRxBuffer + 3, size );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
-
+    NSS_SetLow();
+    SPI1_ExchangeBlock( halTxBuffer, halSize );
+    memcpy( buffer, halTxBuffer + 3, size );
+    NSS_SetHigh();
     SX1280HalWaitOnBusy( );
 }
 
 uint8_t SX1280HalGetDioStatus( void )
 {
-	uint8_t Status = GpioRead( RADIO_BUSY_PORT, RADIO_BUSY_PIN );
+	uint8_t Status = DIO0_GetValue();
 	
-#if( RADIO_DIO1_ENABLE )
-	Status |= (GpioRead( RADIO_DIO1_GPIO_Port, RADIO_DIO1_Pin ) << 1);
+#if defined( RADIO_DIO1_ENABLE )
+	Status |= (DIO1_GetValue() << 1);
 #endif
-#if( RADIO_DIO2_ENABLE )
-	Status |= (GpioRead( RADIO_DIO2_GPIO_Port, RADIO_DIO2_Pin ) << 2);
+#if defined( RADIO_DIO2_ENABLE )
+	Status |= (DIO2_GetValue() << 2);
 #endif
-#if( RADIO_DIO3_ENABLE )
-	Status |= (GpioRead( RADIO_DIO3_GPIO_Port, RADIO_DIO3_Pin ) << 3);
+#if defined( RADIO_DIO3_ENABLE )
+	Status |= (DIO3_GetValue() << 3);
 #endif
-#if( !RADIO_DIO1_ENABLE && !RADIO_DIO2_ENABLE && !RADIO_DIO3_ENABLE )
+#if 0
+#if defined( !RADIO_DIO1_ENABLE && !RADIO_DIO2_ENABLE && !RADIO_DIO3_ENABLE )
 #error "Please define a DIO" 
 #endif
-	
+#endif
 	return Status;
 }

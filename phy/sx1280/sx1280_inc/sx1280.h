@@ -1640,14 +1640,6 @@ void SX1280ProcessIrqs( void );
  */
 void SX1280ClearInstructionRam( void );
 
-/*!
- * \brief Parses 1 HEX file line and writes the content to the instruction memory
- *
- * \param [in]  line          HEX file line string
- *
- * \retval      status        [0: ERROR, 1:OK]
- */
-int8_t SX1280ParseHexFileLine( char* line );
 
 /*!
  * \brief Gets individual fields for the given HEX file line

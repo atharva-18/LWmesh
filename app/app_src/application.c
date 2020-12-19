@@ -724,6 +724,7 @@ static void cmdMac(){
  * \param [OUT] None.
  * \param [IN] None.
  */
+
 static void cmdSetSink(*cmd){
 	char msgstr[16];
 	uint8_t buf_id, needed_size;   

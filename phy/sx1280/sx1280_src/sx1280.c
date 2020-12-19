@@ -948,67 +948,6 @@ void SX1280SetRangingRole( RadioRangingRoles_t role )
     SX1280HalWriteCommand( RADIO_SET_RANGING_ROLE, &buf[0], 1 );
 }
 
-int8_t SX1280GetHexFileLineFields( char* line, uint8_t *bytes, uint16_t *addr, uint16_t *num, uint8_t *code )
-{
-    uint16_t sum, len, cksum;
-    char *ptr;
-
-    *num = 0;
-    if( line[0] != ':' )
-    {
-        return 0;
-    }
-    if( strlen( line ) < 11 )
-    {
-        return 0;
-    }
-    ptr = line + 1;
-    if( !sscanf( ptr, "%02hx", &len ) )
-    {
-        return 0;
-    }
-    ptr += 2;
-    if( strlen( line ) < ( 11 + ( len * 2 ) ) )
-    {
-        return 0;
-    }
-    if( !sscanf( ptr, "%04hx", addr ) )
-    {
-        return 0;
-    }
-    ptr += 4;
-    if( !sscanf( ptr, "%02hhx", code ) )
-    {
-        return 0;
-    }
-    ptr += 2;
-    sum = ( len & 255 ) + ( ( *addr >> 8 ) & 255 ) + ( *addr & 255 ) + ( ( *code >> 8 ) & 255 ) + ( *code & 255 );
-    while( *num != len )
-    {
-        if( !sscanf( ptr, "%02hhx", &bytes[*num] ) )
-        {
-            return 0;
-        }
-        ptr += 2;
-        sum += bytes[*num] & 255;
-        ( *num )++;
-        if( *num >= 256 )
-        {
-            return 0;
-        }
-    }
-    if( !sscanf( ptr, "%02hx", &cksum ) )
-    {
-        return 0;
-    }
-    if( ( ( sum & 255 ) + ( cksum & 255 ) ) & 255 )
-    {
-        return 0; // checksum error
-    }
-
-    return 1;
-}
-
 double SX1280GetFrequencyError( )
 {
     uint8_t efeRaw[3] = {0};
@@ -1201,9 +1140,9 @@ void SX1280ProcessIrqs( void )
     {
         if( IrqState == true )
         {
-            __disable_irq( );
+            di();
             IrqState = false;
-            __enable_irq( );
+            ei();
         }
         else
         {

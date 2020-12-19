@@ -67,6 +67,31 @@
         <itemPath>../phy/sx1276/sx1276_inc/sx1276.h</itemPath>
         <itemPath>../phy/sx1276/sx1276_inc/sx1276Regs-LoRa.h</itemPath>
       </logicalFolder>
+      <logicalFolder name="sx1280_inc" displayName="sx1280_inc" projectFiles="true">
+        <itemPath>../phy/sx1280/sx1280_inc/radio.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/RangingCorrection.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF10BW0400.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF10BW0800.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF10BW1600.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF5BW0400.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF5BW0800.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF5BW1600.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF6BW0400.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF6BW0800.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF6BW1600.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF7BW0400.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF7BW0800.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF7BW1600.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF8BW0400.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF8BW0800.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF8BW1600.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF9BW0400.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF9BW0800.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrectionSF9BW1600.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/rangingCorrection_defines.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/sx1280-hal.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/sx1280.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="sys_inc" displayName="sys_inc" projectFiles="true">
         <itemPath>../sys/sys_inc/sys.h</itemPath>
         <itemPath>../sys/sys_inc/sysConfig.h</itemPath>
@@ -154,6 +179,10 @@
       <logicalFolder name="sx1276_src" displayName="sx1276_src" projectFiles="true">
         <itemPath>../phy/sx1276/sx1276_src/sx1276.c</itemPath>
       </logicalFolder>
+      <logicalFolder name="sx1280_src" displayName="sx1280_src" projectFiles="true">
+        <itemPath>../phy/sx1280/sx1280_src/sx1280-hal.c</itemPath>
+        <itemPath>../phy/sx1280/sx1280_src/sx1280.c</itemPath>
+      </logicalFolder>
       <logicalFolder name="sys_src" displayName="sys_src" projectFiles="true">
         <itemPath>../sys/sys_src/sys.c</itemPath>
         <itemPath>../sys/sys_src/sysEncrypt.c</itemPath>
@@ -195,6 +224,7 @@
     <Elem>../phy/sx1276/sx1276_inc</Elem>
     <Elem>../phy/phy_src</Elem>
     <Elem>../phy/sx1276/sx1276_src</Elem>
+    <Elem>../phy/sx1280</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -248,7 +278,7 @@
         <property key="define-macros" value="ATCOMM;DEBUGVECTOR;FULLFEATURE"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories"
-                  value="..\app\app_inc;..\hal\hal_inc;..\nwk\nwk_inc;..\sys\sys_inc;mcc_generated_files;..\modbus\mb_inc;..\modbus\port;..\modbus\rtu;..\modbus\functions;..\aes\aes_inc;..\wdt\wdt_inc;..\memory\eeprom\eeprom_inc;..\phy\phy_inc;..\phy\sx1276\sx1276_inc"/>
+                  value="..\app\app_inc;..\hal\hal_inc;..\nwk\nwk_inc;..\sys\sys_inc;mcc_generated_files;..\modbus\mb_inc;..\modbus\port;..\modbus\rtu;..\modbus\functions;..\aes\aes_inc;..\wdt\wdt_inc;..\memory\eeprom\eeprom_inc;..\phy\phy_inc;..\phy\sx1276\sx1276_inc;..\phy\sx1280\sx1280_inc"/>
         <property key="favor-optimization-for" value="-speed,+space"/>
         <property key="garbage-collect-data" value="true"/>
         <property key="garbage-collect-functions" value="true"/>

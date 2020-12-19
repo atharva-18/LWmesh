@@ -36,6 +36,7 @@
                 <sourceRootElem>../phy/sx1276/sx1276_inc</sourceRootElem>
                 <sourceRootElem>../phy/phy_src</sourceRootElem>
                 <sourceRootElem>../phy/sx1276/sx1276_src</sourceRootElem>
+                <sourceRootElem>../phy/sx1280</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
