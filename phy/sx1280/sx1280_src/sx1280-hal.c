@@ -257,8 +257,8 @@ void SX1280HalReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
     SPI1_ExchangeBlock( halTxBuffer, halSize );
-    memcpy( buffer, halTxBuffer + 4, size );
     NSS_SetHigh();
+    memcpy( buffer, halTxBuffer + 4, size );
 
     SX1280HalWaitOnBusy( );
 }

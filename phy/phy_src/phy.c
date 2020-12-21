@@ -25,10 +25,15 @@ Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
 /******************************************************************************/
 //LWmesh phy interface
 void PHY_Init(void){
+#if 1
     volatile uint16_t rad_ver;
+    volatile RadioStatus_t rad_stat;
     SX1280HalReset( );
     rad_ver = SX1280GetFirmwareVersion();
+    rad_stat = SX1280GetStatus();
     (void) rad_ver;
+    (void) rad_stat;
+#endif
     radio_state_var = RAD_RESET_LOW;
 }
 
