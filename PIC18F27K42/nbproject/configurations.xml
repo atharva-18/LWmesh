@@ -91,6 +91,7 @@
         <itemPath>../phy/sx1280/sx1280_inc/rangingCorrection_defines.h</itemPath>
         <itemPath>../phy/sx1280/sx1280_inc/sx1280-hal.h</itemPath>
         <itemPath>../phy/sx1280/sx1280_inc/sx1280.h</itemPath>
+        <itemPath>../phy/sx1280/sx1280_inc/sx1280_drv.h</itemPath>
       </logicalFolder>
       <logicalFolder name="sys_inc" displayName="sys_inc" projectFiles="true">
         <itemPath>../sys/sys_inc/sys.h</itemPath>
@@ -182,6 +183,7 @@
       <logicalFolder name="sx1280_src" displayName="sx1280_src" projectFiles="true">
         <itemPath>../phy/sx1280/sx1280_src/sx1280-hal.c</itemPath>
         <itemPath>../phy/sx1280/sx1280_src/sx1280.c</itemPath>
+        <itemPath>../phy/sx1280/sx1280_src/sx1280_drv.c</itemPath>
       </logicalFolder>
       <logicalFolder name="sys_src" displayName="sys_src" projectFiles="true">
         <itemPath>../sys/sys_src/sys.c</itemPath>
@@ -234,7 +236,7 @@
         <targetDevice>PIC18F27K42</targetDevice>
         <targetHeader></targetHeader>
         <targetPluginBoard></targetPluginBoard>
-        <platformTool>PICkit3PlatformTool</platformTool>
+        <platformTool>noID</platformTool>
         <languageToolchain>XC8</languageToolchain>
         <languageToolchainVersion>2.31</languageToolchainVersion>
         <platform>3</platform>
@@ -275,7 +277,7 @@
         <property key="call-prologues" value="false"/>
         <property key="default-bitfield-type" value="true"/>
         <property key="default-char-type" value="true"/>
-        <property key="define-macros" value="ATCOMM;DEBUGVECTOR;FULLFEATURE"/>
+        <property key="define-macros" value="ATCOMM;DEBUGVECTOR;FULLFEATURE;SX1280"/>
         <property key="disable-optimizations" value="false"/>
         <property key="extra-include-directories"
                   value="..\app\app_inc;..\hal\hal_inc;..\nwk\nwk_inc;..\sys\sys_inc;mcc_generated_files;..\modbus\mb_inc;..\modbus\port;..\modbus\rtu;..\modbus\functions;..\aes\aes_inc;..\wdt\wdt_inc;..\memory\eeprom\eeprom_inc;..\phy\phy_inc;..\phy\sx1276\sx1276_inc;..\phy\sx1280\sx1280_inc"/>

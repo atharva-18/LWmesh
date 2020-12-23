@@ -25,7 +25,12 @@ Copyright 2020 Samuel Ramrajkar
 #include "uart_default_control.h"
 #include "AES.h"
 #include "wdt.h"
+#ifdef SX1276
 #include "sx1276.h"
+#endif
+#ifdef SX1280
+#include "sx1280_drv.h"
+#endif
 #ifdef FULLFEATURE
 #include "I2C_EEPROM.h"
 #endif

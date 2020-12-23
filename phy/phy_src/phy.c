@@ -15,25 +15,23 @@ Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
 
 
 #include "phy.h"
+#ifdef SX1276
 #include "sx1276.h"
+#endif
+#ifdef SX1280
+#include "sx1280_drv.h"
 #include "sx1280.h"
 #include "sx1280-hal.h"
+#endif
+
 #include "Timers.h"
 #include "led.h"
 #include <stdlib.h>
+#include <string.h>
 
 /******************************************************************************/
 //LWmesh phy interface
 void PHY_Init(void){
-#if 1
-    volatile uint16_t rad_ver;
-    volatile RadioStatus_t rad_stat;
-    SX1280HalReset( );
-    rad_ver = SX1280GetFirmwareVersion();
-    rad_stat = SX1280GetStatus();
-    (void) rad_ver;
-    (void) rad_stat;
-#endif
     radio_state_var = RAD_RESET_LOW;
 }
 

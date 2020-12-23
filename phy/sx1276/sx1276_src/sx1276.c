@@ -13,7 +13,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 Maintainer: Miguel Luis, Gregory Cristian and Wael Guibene
 */
 
-
+#ifdef SX1276
 #include "phy.h"
 #include "Timers.h"
 #include "led.h"
@@ -153,7 +153,6 @@ void setTxPower(uint8_t power)
 
 /*!
  * \brief Sets the SX1276 TX/RX frequency
- *
  * \param [OUT] None.
  * \param [IN] Frequency in Hz.
  */
@@ -821,4 +820,4 @@ void readAllReg(void)
     }
     asm("nop");
 }
-
+#endif

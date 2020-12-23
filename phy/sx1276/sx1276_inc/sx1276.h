@@ -12,6 +12,7 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 
 Maintainer: Miguel Luis and Gregory Cristian
 */
+#ifdef SX1276
 #ifndef __SX1276_H__
 #define __SX1276_H__
 
@@ -354,3 +355,4 @@ void radio_engine(void);
 void readAllReg(void);
 
 #endif // __SX1276_H__
+#endif
