@@ -3,6 +3,10 @@
 #include "sx1280_drv.h"
 #include "sx1280.h"
 #include "sx1280-hal.h"
+#include "Timers.h"
+#include "phy.h"
+#include "led.h"
+#include <stdlib.h>
 
 static ModulationParams_t mod_params;
 static PacketParams_t     packet_params;
@@ -156,7 +160,7 @@ void idle(void)
  */
 void receive(uint8_t size)
 {
-    TickTime_t timeout;
+    volatile RadioStatus_t rad_stat;
     PacketParams_t     packet_params;
     packet_params.PacketType                 = PACKET_TYPE_LORA;
     packet_params.Params.LoRa.PreambleLength = 0x32u;    
@@ -174,8 +178,118 @@ void receive(uint8_t size)
     SX1280SetPacketParams(&packet_params);
     SX1280SetBufferBaseAddresses(0u, 128u);
     SX1280ClearIrqStatus(IRQ_RADIO_ALL);
-    timeout.NbSteps = 0xFFFF;
-    SX1280SetRx(timeout);
+    SX1280SetRx(RX_TX_CONTINUOUS);
+    __delay_us(200);
+    rad_stat = SX1280GetStatus();
+}
+
+/*!
+ * \brief Calculate packet LQI from packet RSSI
+ *
+ * \param [OUT] LQI
+ * \param [IN] RSSI
+ */
+static uint8_t get_lqi(int8_t rssi){
+    if(rssi > -10){
+        return 255;
+    }
+    return ((2.18*(int16_t)rssi) + 10795);
+}
+
+/*!
+ * \brief Read the received message from the radio
+ *
+ * \param [OUT] Packet in the last received buffer.
+ * \param [IN] None
+ */
+static void DIO0_Receive_ISR(void)
+{
+    PacketStatus_t pktStatus;
+    uint16_t irqFlags;
+    //Get packet status
+    SX1280GetPacketStatus((PacketStatus_t*)&pktStatus);
+    // clear IRQ's
+    irqFlags = SX1280GetIrqStatus( );
+    SX1280ClearIrqStatus(IRQ_RADIO_ALL);
+    
+    if ((0 == pktStatus.Params.LoRa.ErrorStatus.CrcError) &&
+        (0 == pktStatus.Params.LoRa.ErrorStatus.LengthError) &&
+        (0 == pktStatus.Params.LoRa.ErrorStatus.AbortError) &&
+        (0 == pktStatus.Params.LoRa.ErrorStatus.SyncError) &&
+        (0 != pktStatus.Params.LoRa.ErrorStatus.PacketReceived)) 
+    {
+        PHY_DataInd_t ind;
+        uint8_t packetLength;
+        // received a packet
+        // read packet length
+        SX1280GetPayload(&phyRxBuffer, &packetLength, sizeof(phyRxBuffer));
+ 
+        //load the snr, and packet RSSI values
+        SNR = pktStatus.Params.LoRa.SnrPkt;
+        packetRSSI = pktStatus.Params.LoRa.RssiPkt;
+        ind.data = phyRxBuffer;
+        ind.size = packetLength;
+        ind.rssi = packetRSSI;
+        ind.lqi  = get_lqi(ind.rssi); 
+        if(ind.rssi > rssi_debug){
+            PHY_DataInd(&ind);
+#ifndef MODULE            
+            queue_rx_led_event();
+#endif            
+        }        
+    }    
+    receive(0);
+}
+
+/*!
+ * \brief Perform channel activity detection. This is a blocking call
+ *
+ * \param [OUT] 1 if the channel is active else 0
+ * \param [IN] Node
+ */
+static uint8_t cad(void){
+    uint16_t temp;
+    int16_t RSSI_loc;
+    volatile RadioStatus_t rad_stat;
+    //Read the modem status and check if radio is not busy
+    RSSI_loc = SX1280GetRssiInst();
+#if 0
+    if(RSSI_loc > RSSITarget){
+        return 1; //Report that channel is active
+    }  
+#endif
+    SX1280SetCad();
+    rad_stat = SX1280GetStatus();
+    cadDone = 0;
+    set_timer0base(&cadTimeOut, cadTimeOutms);
+    //Wait here till cad is done or timed out
+    while((cadDone == 0) && (get_timer0base(&cadTimeOut)))
+    {
+        temp = SX1280GetIrqStatus();
+        
+        if(0 != (temp & IRQ_CAD_DONE))
+        {
+            cadDone = 1;
+            if(0 != (temp & IRQ_CAD_ACTIVITY_DETECTED))
+            {
+                return 1;
+            }
+            else
+            {                
+                return 0;
+            }
+        }
+    }
+    if(!get_timer0base(&cadTimeOut))
+    {
+        //CAD timed out return channel active
+        return 1;
+    }
+}
+
+static void sx1276_send()
+{
+    SX1280SendPayload(phyTxBuffer, phyTxSize, RX_TX_CONTINUOUS);
 }
 
 /*!
@@ -188,24 +302,47 @@ void initRadio(void)
 {
     volatile uint16_t rad_ver;
     volatile RadioStatus_t rad_stat;
-    rad_ver = SX1280GetFirmwareVersion();
-    rad_stat = SX1280GetStatus();
-    (void) rad_ver;
-    (void) rad_stat;
+    volatile uint8_t test;
+    PacketParams_t     packet_params;
+    SX1280SetRegulatorMode(USE_DCDC);
+    __delay_ms(100);
+    SX1280HalClearInstructionRam();
+    rad_ver = SX1280GetFirmwareVersion();    
     SX1280SetStandby(STDBY_RC);
+    test = SX1280HalReadRegister(0x944);
+    SX1280HalWriteRegister(0x944, 0xaa);
+    test = SX1280HalReadRegister(0x944);
     SX1280SetPacketType(PACKET_TYPE_LORA);
-    SX1280SetRfFrequency(2.403E6);
-    SX1280SetBufferBaseAddresses(0, 128);
+    test = SX1280GetPacketType();
     
     mod_params.PacketType                    = PACKET_TYPE_LORA;
     mod_params.Params.LoRa.SpreadingFactor   = LORA_SF9;
     mod_params.Params.LoRa.Bandwidth         = LORA_BW_0800;
     mod_params.Params.LoRa.CodingRate        = LORA_CR_LI_4_6;
+    
     SX1280SetModulationParams(&mod_params);
     SX1280HalWriteRegister(0x925u, 0x32u);
     SX1280HalWriteRegister(0x093Cu, 0x01u);
+        
+    packet_params.PacketType                 = PACKET_TYPE_LORA;
+    packet_params.Params.LoRa.PreambleLength = 0x32u;    
+    packet_params.Params.LoRa.CrcMode        = LORA_CRC_ON;
+    packet_params.Params.LoRa.InvertIQ       = LORA_IQ_NORMAL;
+    packet_params.Params.LoRa.HeaderType     = LORA_PACKET_EXPLICIT;
     
+    SX1280SetPacketParams(&packet_params);
+    SX1280SetBufferBaseAddresses(0, 128);
+    SX1280SetRfFrequency(2404000000);
     SX1280SetTxParams(10, RADIO_RAMP_10_US);
+    
+    SX1280SetDioIrqParams(IRQ_RX_DONE | IRQ_CAD_DONE | IRQ_TX_DONE | 
+            IRQ_CAD_ACTIVITY_DETECTED, IRQ_RX_DONE, IRQ_RADIO_NONE, 
+            IRQ_RADIO_NONE);
+    
+    SX1280SetCadParams(LORA_CAD_08_SYMBOL);
+    SX1280SetFs();
+
+    rad_stat = SX1280GetStatus();
 }
 
 /*!
@@ -216,6 +353,109 @@ void initRadio(void)
  */
 void radio_engine(void)
 {
-    
+    switch(radio_state_var){
+        case RAD_RESET_LOW:
+            RADRST_SetLow();
+            set_timer0base(&txTimeOut, 100); //Reuse the timer
+            radio_state_var = RAD_RESET_LOW_WAIT;
+            break;
+        case RAD_RESET_LOW_WAIT:
+            if(!get_timer0base(&txTimeOut)){
+                RADRST_SetHigh();
+                set_timer0base(&txTimeOut, 700); //Reuse the timer
+                radio_state_var = RAD_RESET_HIGH_WAIT;
+            }
+            break;
+        case RAD_RESET_HIGH_WAIT:
+            if(!get_timer0base(&txTimeOut)){
+                radio_state_var = INIT_RADIO;
+            }
+            break;
+        case INIT_RADIO:
+            initRadio();
+            radio_state_var = START_RX;   
+            need_radio_reset = 0;
+            break;
+        case START_RX:
+            if(need_radio_reset){
+                radio_state_var = INIT_RADIO;
+                break;
+            }
+            receive(0);
+            radio_state_var = WAIT_FOR_RX;
+            break;
+        case WAIT_FOR_RX:
+            //Poll for DIO1 for RX done
+            if(DIO1_GetValue()){
+                radio_state_var = RX_MESSAGE;                
+            }
+            if(phyTxSize){
+                //Set random backoff timer
+                uint16_t temp_time = rand();
+                while(temp_time > RANOM_TX_WAIT_MAX){
+                   temp_time -= RANOM_TX_WAIT_MAX;
+                }
+                set_timer0base(&_cadBackoffTimer, temp_time);
+                radio_state_var = WAIT_RANDOM_TX;
+            }
+            break;    
+        case RX_MESSAGE:
+            DIO0_Receive_ISR();
+            radio_state_var = START_RX;
+            break;
+        case WAIT_RANDOM_TX:
+            if(!get_timer0base(&_cadBackoffTimer)){
+                radio_state_var = START_CAD;
+            }
+            if(DIO0_GetValue()){
+                DIO0_Receive_ISR(); // Do not change state
+            }
+            break;
+        case START_CAD:
+            if(!get_timer0base(&_cadBackoffTimer)){
+                if(cad()){
+                    //Channel is active. Back away for some time
+                    set_timer0base(&_cadBackoffTimer, cadTimeOutms);
+                    //Backing off from the channel for now
+                    radio_state_var = START_RX;
+                    if(cadCounter < 10){
+                        cadCounter++;
+                    }
+                }
+                else{
+                //Backing off from the cannel for now
+                radio_state_var = START_TX;
+                }
+            }
+            else{
+                //Backing off from the cannel for now
+                radio_state_var = WAIT_FOR_RX;
+            }
+            break;
+        case START_TX:
+            sx1276_send();
+            set_timer0base(&txTimeOut, TxTimeOutms);
+            radio_state_var = WAIT_FOR_TX;            
+            break;
+        case WAIT_FOR_TX:
+            if((!get_timer0base(&txTimeOut)) || 
+                    (0 != (SX1280GetIrqStatus() & IRQ_TX_DONE)))
+            {
+                phyTxSize = 0;
+                radio_state_var = START_RX;
+                if(get_timer0base(&txTimeOut)){
+                    PHY_DataConf(PHY_STATUS_SUCCESS);
+#ifndef MODULE                    
+                    queue_tx_led_event();
+#endif                    
+                }
+                else{
+                    PHY_DataConf(PHY_STATUS_NO_ACK);
+                }
+            }
+            break;
+        default:
+            radio_state_var = RAD_RESET_LOW;
+    }
 }
 #endif

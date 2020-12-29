@@ -128,6 +128,13 @@ void SX1280HalReadBuffer( uint8_t offset, uint8_t *buffer, uint8_t size );
  */
 uint8_t SX1280HalGetDioStatus( void );
 
+/*!
+ * \brief Exchanges on byte on the SPI
+ *
+ * \retval      One byte read from radio
+ */
+uint8_t SX1280HalExchangeByte( uint8_t byte );
+
 void SX1280HalIoIrqInit( DioIrqHandler **irqHandlers );
 
 #endif // __SX1280_HAL_H__

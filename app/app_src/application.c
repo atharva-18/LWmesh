@@ -1864,7 +1864,6 @@ void bootLoadApplication(void)
     NWK_SetPanId(pan_id);
     NWK_OpenEndpoint(DATA_EP, appDataInd);
     NWK_OpenEndpoint(MANAGEMENT_EP, appManagementEp);
-    PHY_SetRxState(true);
     TMR0_SetInterruptHandler(Timer0Handler);    
 }
 

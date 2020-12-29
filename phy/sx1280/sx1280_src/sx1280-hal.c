@@ -159,28 +159,23 @@ void SX1280HalReset( void )
 
 void SX1280HalClearInstructionRam( void )
 {
-#if 0
     // Clearing the instruction RAM is writing 0x00s on every bytes of the
     // instruction RAM
     uint16_t halSize = 3 + IRAM_SIZE;
     halTxBuffer[0] = RADIO_WRITE_REGISTER;
     halTxBuffer[1] = ( IRAM_START_ADDRESS >> 8 ) & 0x00FF;
     halTxBuffer[2] = IRAM_START_ADDRESS & 0x00FF;
+
+    SX1280HalWaitOnBusy( );
+    NSS_SetLow();
+    SPI1_WriteBlock( halTxBuffer, 3 );
     for( uint16_t index = 0; index < IRAM_SIZE; index++ )
     {
-        halTxBuffer[3+index] = 0x00;
+        SPI1_ExchangeByte(0x00);
     }
+    NSS_SetHigh();
 
     SX1280HalWaitOnBusy( );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 0 );
-
-    SpiIn( halTxBuffer, halSize );
-
-    GpioWrite( RADIO_NSS_PORT, RADIO_NSS_PIN, 1 );
-
-    SX1280HalWaitOnBusy( );
-#endif
 }
 
 void SX1280HalWakeup( void )
@@ -199,7 +194,10 @@ void SX1280HalWriteCommand( RadioCommands_t command, uint8_t *buffer, uint16_t s
 {
     uint16_t halSize  = size + 1U;
     halTxBuffer[0] = command;
-    memcpy( halTxBuffer + 1U, ( uint8_t * )buffer, size * sizeof( uint8_t ) );
+    if(0 != size)
+    {
+        memcpy( halTxBuffer + 1U, ( uint8_t * )buffer, size * sizeof( uint8_t ) );
+    }
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
     SPI1_WriteBlock( halTxBuffer, halSize );
@@ -319,4 +317,14 @@ uint8_t SX1280HalGetDioStatus( void )
 #endif
 #endif
 	return Status;
+}
+
+/*!
+ * \brief Exchanges on byte on the SPI
+ *
+ * \retval      One byte read from radio
+ */
+uint8_t SX1280HalExchangeByte( uint8_t byte )
+{
+    return SPI1_ExchangeByte(byte);
 }

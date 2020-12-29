@@ -107,7 +107,6 @@ RadioStatus_t SX1280GetStatus( void )
 {
     uint8_t stat = 0;
     RadioStatus_t status;
-
     SX1280HalReadCommand( RADIO_GET_STATUS, ( uint8_t * )&stat, 1 );
     status.Value = stat;
     return status;
@@ -225,7 +224,10 @@ void SX1280SetPacketType( RadioPacketTypes_t packetType )
 
 RadioPacketTypes_t SX1280GetPacketType( void )
 {
-    return PacketType;
+    RadioPacketTypes_t packet_typ;
+    uint8_t data;
+    SX1280HalReadCommand(RADIO_GET_PACKETTYPE, &data, 1);
+    return data;
 }
 
 void SX1280SetRfFrequency( uint32_t frequency )
@@ -532,12 +534,12 @@ uint16_t SX1280GetIrqStatus( void )
     return ( irqStatus[0] << 8 ) | irqStatus[1];
 }
 
-void SX1280ClearIrqStatus( uint16_t irq )
+void SX1280ClearIrqStatus( uint16_t irq_val )
 {
     uint8_t buf[2];
 
-    buf[0] = ( uint8_t )( ( ( uint16_t )irq >> 8 ) & 0x00FF );
-    buf[1] = ( uint8_t )( ( uint16_t )irq & 0x00FF );
+    buf[0] = ( uint8_t )( ( ( uint16_t )irq_val >> 8 ) & 0x00FF );
+    buf[1] = ( uint8_t )( ( uint16_t )irq_val & 0x00FF );
     SX1280HalWriteCommand( RADIO_CLR_IRQSTATUS, buf, 2 );
 }
 
