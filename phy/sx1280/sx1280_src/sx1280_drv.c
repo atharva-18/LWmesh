@@ -258,6 +258,8 @@ static uint8_t cad(void){
         return 1; //Report that channel is active
     }  
 #endif
+    SX1280ClearIrqStatus(IRQ_RADIO_ALL);
+    idle();
     SX1280SetCad();
     rad_stat = SX1280GetStatus();
     cadDone = 0;
@@ -309,20 +311,24 @@ void initRadio(void)
     SX1280HalClearInstructionRam();
     rad_ver = SX1280GetFirmwareVersion();    
     SX1280SetStandby(STDBY_RC);
+#if 0
     test = SX1280HalReadRegister(0x944);
     SX1280HalWriteRegister(0x944, 0xaa);
     test = SX1280HalReadRegister(0x944);
     SX1280SetPacketType(PACKET_TYPE_LORA);
     test = SX1280GetPacketType();
+#endif
     
     mod_params.PacketType                    = PACKET_TYPE_LORA;
     mod_params.Params.LoRa.SpreadingFactor   = LORA_SF9;
-    mod_params.Params.LoRa.Bandwidth         = LORA_BW_0800;
-    mod_params.Params.LoRa.CodingRate        = LORA_CR_LI_4_6;
+    mod_params.Params.LoRa.Bandwidth         = LORA_BW_1600;
+    mod_params.Params.LoRa.CodingRate        = LORA_CR_4_6;
     
     SX1280SetModulationParams(&mod_params);
+#if 0
     SX1280HalWriteRegister(0x925u, 0x32u);
     SX1280HalWriteRegister(0x093Cu, 0x01u);
+#endif
         
     packet_params.PacketType                 = PACKET_TYPE_LORA;
     packet_params.Params.LoRa.PreambleLength = 0x32u;    
@@ -336,8 +342,8 @@ void initRadio(void)
     SX1280SetTxParams(10, RADIO_RAMP_10_US);
     
     SX1280SetDioIrqParams(IRQ_RX_DONE | IRQ_CAD_DONE | IRQ_TX_DONE | 
-            IRQ_CAD_ACTIVITY_DETECTED, IRQ_RX_DONE, IRQ_RADIO_NONE, 
-            IRQ_RADIO_NONE);
+            IRQ_CAD_ACTIVITY_DETECTED, IRQ_RX_DONE, IRQ_CAD_DONE, 
+            IRQ_HEADER_ERROR);
     
     SX1280SetCadParams(LORA_CAD_08_SYMBOL);
     SX1280SetFs();
@@ -407,7 +413,7 @@ void radio_engine(void)
             if(!get_timer0base(&_cadBackoffTimer)){
                 radio_state_var = START_CAD;
             }
-            if(DIO0_GetValue()){
+            if(DIO1_GetValue()){
                 DIO0_Receive_ISR(); // Do not change state
             }
             break;
