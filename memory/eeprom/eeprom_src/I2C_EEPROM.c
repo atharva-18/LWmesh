@@ -2,7 +2,7 @@
 *
 *                     Software License Agreement
 *
-*     ©2007 Microchip Technology Inc
+*     Â©2007 Microchip Technology Inc
 *     Mirochip Technology Inc. ("Microchip") licenses this software to
 *     you solely for the use with Microchip Products. The software is
 *     owned by Microchip and is protected under applicable copyright
@@ -55,7 +55,7 @@ void eeprom_wr_byte(unsigned int addr, unsigned char data)
  
     // comment the next line if a Low-Density (<=2kB) device is used
     i2c_wr(addr>>8);             //      address MSB
-    i2c_wr(addr & 0xff);         //      address LSB
+    i2c_wr(addr & 0xffu);         //      address LSB
 
     i2c_wr(data);                // send data
     //ack_poll(EEPROM_WR);         // ACK polling
@@ -76,7 +76,7 @@ unsigned char eeprom_rd_byte(unsigned int addr)
 
     // comment the next line if a Low-Density (<=2kB) device is used
     i2c_wr(addr>>8);             //      address MSB
-    i2c_wr(addr & 0xff);         //      address LSB
+    i2c_wr(addr & 0xffu);         //      address LSB
 
     i2c_start();                 // generate Start COndition
     i2c_wr(EEPROM_RD);           // send READ command
@@ -91,19 +91,22 @@ unsigned char eeprom_rd_byte(unsigned int addr)
 //.............................................................................
 //         Writes a page to the EEPROM address
 //.............................................................................
-void eeprom_wr_page(unsigned int addr,unsigned char *data, unsigned char length)
+void eeprom_wr_page(unsigned int write_addr,unsigned char *data, unsigned char length)
 {
-unsigned char i=0, j=0, page_nr=0;
+unsigned char i=0;
+unsigned char j=0;
+unsigned char page_nr=0;
+unsigned int addr=write_addr;
 
 i2c_start();                 // generate Start COndition
 i2c_wr(EEPROM_WR);           // send WRITE command
 
 // comment the next line if a Low-Density (<=2kB) device is used
 i2c_wr(addr>>8);             //      address MSB
-i2c_wr(addr & 0xff);         //      address LSB
+i2c_wr(addr & 0xffu);         //      address LSB
 
 
-if (addr%PAGE_SIZE)
+if ((addr%PAGE_SIZE) > 0)
     {
     if (length>(PAGE_SIZE-(addr%PAGE_SIZE)))
         {
@@ -119,7 +122,7 @@ if (addr%PAGE_SIZE)
         page_nr=length/PAGE_SIZE;// calculate the number of pages
         eeprom_next_page(addr);  // write the address of the next page
 
-        while(page_nr)           // loop until all pages are written
+        while(page_nr > (uint8_t)0)           // loop until all pages are written
             {
             for (i=0; i<PAGE_SIZE; i++)// Loop through number of bytes
                 {
@@ -134,14 +137,18 @@ if (addr%PAGE_SIZE)
             eeprom_next_page(addr); // write the address of the next page
             }
 
-        for (; j<length; j++)   // loop through number of bytes
-             i2c_wr(data[j]);   // write next byte from array
+        for (; j<length; j++)
+            {// loop through number of bytes
+            i2c_wr(data[j]);   // write next byte from array
+            }
         }
-
-    else for (i=0; i<length; i++)// loop through number of bytes
+    else 
+        {
+        for (i=0; i<length; i++)// loop through number of bytes
             {
             i2c_wr(data[i]);     // write next byte from array
             }
+        }
     }
 
 
@@ -150,7 +157,7 @@ else
     if (length>PAGE_SIZE)
         {
         page_nr=length/PAGE_SIZE;// calculate the number of pages
-        while(page_nr)           // loop until all pages are written
+        while(page_nr > (uint8_t)0)           // loop until all pages are written
             {
             for (i=0; i<PAGE_SIZE; i++)// Loop through number of bytes
                 {
@@ -164,14 +171,19 @@ else
             addr+=PAGE_SIZE;    // inc address with 1 page
             eeprom_next_page(addr); // write the address of the next page
             }
-        for (; j<length; j++)   // loop through number of bytes
-             i2c_wr(data[j]);   // write next byte from array
+        for (; j<length; j++)
+            {
+            i2c_wr(data[j]);   // write next byte from array
+            }   // loop through number of bytes
         }
 
-    else for (i=0; i<length; i++)     // loop through number of bytes
+    else
+        {
+        for (i=0; i<length; i++)     // loop through number of bytes
             {
             i2c_wr(data[i]);    // write next byte from array
             }
+        }
     }
 
 i2c_stop();                     // send Stop condition
@@ -191,7 +203,7 @@ i2c_wr(EEPROM_WR);              // send WRITE command
 
 // comment the next line if a Low-Density (<=2kB) device is used
 i2c_wr(addr>>8);                //      address MSB
-i2c_wr(addr&0xff);              //      address LSB
+i2c_wr(addr & 0xffu);              //      address LSB
 
 i2c_start();                    // generate Start COndition
 i2c_wr(EEPROM_RD);              // send READ command
@@ -199,8 +211,14 @@ i2c_wr(EEPROM_RD);              // send READ command
 for (i=0; i<length; i++)        // loop through number of bytes
     {
     
-    if (i<(length-1)) data[i]=i2c_rd(ACK);  // write next byte to array & send ACK bit
-    else data[i]=i2c_rd(NACK);  // send NACK bit
+    if (i<(length-1u)) 
+        {
+        data[i]=i2c_rd(ACK);  // write next byte to array & send ACK bit
+        }
+    else
+        {
+        data[i]=i2c_rd(NACK);  // send NACK bit
+        }
     }
 
 i2c_stop();                     // send Stop Condition
@@ -216,7 +234,7 @@ i2c_start();                    // send Start condition
 i2c_wr(EEPROM_WR);              // send WRITE command
 // comment the next line if a Low-Density (<=2kB) device is used
 i2c_wr(address>>8);             //      address MSB
-i2c_wr(address & 0xff);         //      address LSB
+i2c_wr(address & 0xffu);         //      address LSB
 }
 
 

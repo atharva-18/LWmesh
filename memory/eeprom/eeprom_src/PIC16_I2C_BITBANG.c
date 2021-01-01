@@ -2,7 +2,7 @@
 *
 *                     Software License Agreement
 *
-*     ©2007 Microchip Technology Inc
+*     Â©2007 Microchip Technology Inc
 *     Mirochip Technology Inc. ("Microchip") licenses this software to
 *     you solely for the use with Microchip Products. The software is
 *     owned by Microchip and is protected under applicable copyright
@@ -56,10 +56,16 @@ unsigned int i;
 SDA_TRIS = 0;                   // SDA = output
 SDA_SetHigh();
 SCL_SetHigh();
-for (i=0;i<2;i++) NOP();
+for (i=0;i<2u;i++)
+{
+    NOP();
+}
 //SDA = 0;                        // pull SDA low
 SDA_SetLow();
-for (i=0;i<2;i++) NOP();
+for (i=0;i<2u;i++)
+{
+    NOP();
+}
 //SCL = 0;                        // pull SCL low
 SCL_SetLow();
 }
@@ -77,11 +83,17 @@ SCL_SetLow();
 SDA_TRIS = 0;                   // SDA = output
 //SDA = 0;                        // SDA low
 SDA_SetLow();
-for (i=0;i<3;i++) NOP();
+for (i=0;i<3u;i++)
+{
+    NOP();
+}
 //SCL = 1;                        // pull SCL high
 SCL_SetHigh();
 SDA_TRIS = 1;                   // allow SDA to be pulled high
-for (i=0;i<3;i++) NOP();
+for (i=0;i<3u;i++)
+{
+    NOP();
+}
 //SCL=0;                          // ensure SCL is low
 SCL_SetLow();
 }
@@ -98,7 +110,7 @@ unsigned int i;
 SCL_SetLow();
 SDA_TRIS=0;                     // configure SDA as an output
 //SDA= (data>>7);                 // output the MSB
-if(data & 0x80)
+if((data & 0x80u) > 0u)
 {
     SDA_SetHigh();
 }
@@ -106,10 +118,16 @@ else
 {
     SDA_SetLow();
 }
-for (i=0;i<2;i++) NOP();
+for (i=0;i<2u;i++)
+{
+    NOP();
+}
 //SCL = 1;                        // pull SCL high to clock bit
 SCL_SetHigh();
-for (i=0;i<3;i++) NOP();
+for (i=0;i<3u;i++)
+{
+    NOP();
+}
 //SCL = 0;                        // pull SCL low for next bit
 SCL_SetLow();
 }
@@ -126,9 +144,15 @@ unsigned int i;
 SCL_SetLow();
 SDA_TRIS = 1;                   // configure SDA as an input
 //SCL = 1;                        // bring SCL high to begin transfer
-for (i=0;i<3;i++) NOP();
+for (i=0;i<3u;i++)
+{
+    NOP();
+}
 SCL_SetHigh();
-for (i=0;i<3;i++) NOP();
+for (i=0;i<3u;i++)
+{
+    NOP();
+}
 //*data |= SDA;                   // input the received bit
 *data |= SDA_GetValue();
 //SCL = 0;                        // bring SCL low again.
@@ -139,17 +163,18 @@ SCL_SetLow();
 //....................................................................
 // Writes a byte to the I2C bus
 //....................................................................
-unsigned char i2c_wr(unsigned char data)
+unsigned char i2c_wr(unsigned char input_data)
 {
 unsigned char i;                // loop counter
 unsigned char ack;              // ACK bit
+unsigned char data = input_data;
 
 ack = 0;
-for (i = 0; i < 8; i++)         // loop through each bit
-    {
+for (i = 0; i < 8u; i++)         // loop through each bit
+{
     bit_out(data);              // output bit
     data = data << 1;           // shift left for next bit
-    }
+}
 
 bit_in(&ack);                   // input ACK bit
 return ack;
@@ -164,7 +189,7 @@ unsigned char i2c_rd(unsigned char ack)
     unsigned char i;                // loop counter
     volatile unsigned char ret=0;            // return value
 
-    for (i = 0; i < 8; i++)         // loop through each bit
+    for (i = 0; i < 8u; i++)         // loop through each bit
     {
         ret = ret << 1;             // shift left for next bit
         bit_in(&ret);               // input bit
@@ -182,7 +207,7 @@ void ack_poll (unsigned char control)
 {
 unsigned char result=1;
 
-while(result)
+while(result > (uint8_t)0)
 	{
 	i2c_start();            // generate Restart condition
 	result=i2c_wr(control); // send control byte (WRITE command)
