@@ -109,7 +109,7 @@
 [app/app_src/application.c:2267]: (style) The function 'eMBRegHoldingCB' is never used.
 [modbus/mb.c:226]: (style) The function 'eMBRegisterCB' is never used.
 [modbus/mb.c:197]: (style) The function 'eMBTCPInit' is never used.
-[memory/eeprom/eeprom_src/I2C_EEPROM.c:185]: (style) The function 'eeprom_rd_page' is never used.
+[memory/eeprom/eeprom_src/I2C_EEPROM.c:197]: (style) The function 'eeprom_rd_page' is never used.
 [memory/eeprom/eeprom_src/I2C_EEPROM.c:94]: (style) The function 'eeprom_wr_page' is never used.
 [phy/sx1216/phy_src/phy.c:343]: (style) The function 'getSyncWord' is never used.
 [PIC18F26K42/mcc_generated_files/uart1.c:237]: (style) The function 'getch' is never used.
