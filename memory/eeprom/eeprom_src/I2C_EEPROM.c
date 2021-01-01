@@ -211,7 +211,7 @@ i2c_wr(EEPROM_RD);              // send READ command
 for (i=0; i<length; i++)        // loop through number of bytes
     {
     
-    if (i<(length-(uint8_t)1)) 
+    if (i<(length-1u)) 
         {
         data[i]=i2c_rd(ACK);  // write next byte to array & send ACK bit
         }
