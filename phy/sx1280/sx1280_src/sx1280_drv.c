@@ -179,7 +179,7 @@ void receive(uint8_t size)
     SX1280SetBufferBaseAddresses(0u, 128u);
     SX1280ClearIrqStatus(IRQ_RADIO_ALL);
     SX1280SetRx(RX_TX_CONTINUOUS);
-    __delay_us(200);
+    __delay_ms(200);
     rad_stat = SX1280GetStatus();
 }
 
@@ -305,10 +305,18 @@ void initRadio(void)
     volatile uint16_t rad_ver;
     volatile RadioStatus_t rad_stat;
     volatile uint8_t test;
+    volatile double freq_error;
     PacketParams_t     packet_params;
+    CalibrationParams_t calib_params;
+    calib_params.PLLEnable = 1;
+    calib_params.RC13MEnable = 1;
+    calib_params.RC64KEnable = 1;
+    
+    
+    SX1280Calibrate(calib_params);
     SX1280SetRegulatorMode(USE_DCDC);
     __delay_ms(100);
-    SX1280HalClearInstructionRam();
+    SX1280HalClearInstructionRam();  
     rad_ver = SX1280GetFirmwareVersion();    
     SX1280SetStandby(STDBY_RC);
 #if 0
@@ -320,15 +328,14 @@ void initRadio(void)
 #endif
     
     mod_params.PacketType                    = PACKET_TYPE_LORA;
-    mod_params.Params.LoRa.SpreadingFactor   = LORA_SF9;
+    mod_params.Params.LoRa.SpreadingFactor   = LORA_SF12;
     mod_params.Params.LoRa.Bandwidth         = LORA_BW_1600;
     mod_params.Params.LoRa.CodingRate        = LORA_CR_4_6;
     
     SX1280SetModulationParams(&mod_params);
-#if 0
     SX1280HalWriteRegister(0x925u, 0x32u);
     SX1280HalWriteRegister(0x093Cu, 0x01u);
-#endif
+
         
     packet_params.PacketType                 = PACKET_TYPE_LORA;
     packet_params.Params.LoRa.PreambleLength = 0x32u;    
@@ -339,15 +346,15 @@ void initRadio(void)
     SX1280SetPacketParams(&packet_params);
     SX1280SetBufferBaseAddresses(0, 128);
     SX1280SetRfFrequency(2404000000);
-    SX1280SetTxParams(10, RADIO_RAMP_10_US);
+    SX1280SetTxParams(8, RADIO_RAMP_02_US);
     
     SX1280SetDioIrqParams(IRQ_RX_DONE | IRQ_CAD_DONE | IRQ_TX_DONE | 
             IRQ_CAD_ACTIVITY_DETECTED, IRQ_RX_DONE, IRQ_CAD_DONE, 
             IRQ_HEADER_ERROR);
     
-    SX1280SetCadParams(LORA_CAD_08_SYMBOL);
+    SX1280SetCadParams(LORA_CAD_04_SYMBOL);
     SX1280SetFs();
-
+    freq_error = SX1280GetFrequencyError();
     rad_stat = SX1280GetStatus();
 }
 
