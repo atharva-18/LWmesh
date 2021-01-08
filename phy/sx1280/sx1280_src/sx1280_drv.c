@@ -164,7 +164,7 @@ void receive(uint8_t size)
     PacketParams_t     packet_params;
     packet_params.PacketType                 = PACKET_TYPE_LORA;
     packet_params.Params.LoRa.PreambleLength = 0x32u;    
-    packet_params.Params.LoRa.CrcMode        = LORA_CRC_ON;
+    packet_params.Params.LoRa.CrcMode        = LORA_CRC_OFF;
     packet_params.Params.LoRa.InvertIQ       = LORA_IQ_NORMAL;
     if (0u != size) 
     {
@@ -179,7 +179,6 @@ void receive(uint8_t size)
     SX1280SetBufferBaseAddresses(0u, 128u);
     SX1280ClearIrqStatus(IRQ_RADIO_ALL);
     SX1280SetRx(RX_TX_CONTINUOUS);
-    __delay_ms(200);
     rad_stat = SX1280GetStatus();
 }
 
@@ -212,7 +211,7 @@ static void DIO0_Receive_ISR(void)
     irqFlags = SX1280GetIrqStatus( );
     SX1280ClearIrqStatus(IRQ_RADIO_ALL);
     
-    if ((0 == pktStatus.Params.LoRa.ErrorStatus.CrcError) &&
+    if (/*(0 == pktStatus.Params.LoRa.ErrorStatus.CrcError) && */
         (0 == pktStatus.Params.LoRa.ErrorStatus.LengthError) &&
         (0 == pktStatus.Params.LoRa.ErrorStatus.AbortError) &&
         (0 == pktStatus.Params.LoRa.ErrorStatus.SyncError) &&
@@ -253,11 +252,9 @@ static uint8_t cad(void){
     volatile RadioStatus_t rad_stat;
     //Read the modem status and check if radio is not busy
     RSSI_loc = SX1280GetRssiInst();
-#if 0
     if(RSSI_loc > RSSITarget){
         return 1; //Report that channel is active
     }  
-#endif
     SX1280ClearIrqStatus(IRQ_RADIO_ALL);
     idle();
     SX1280SetCad();
@@ -291,6 +288,15 @@ static uint8_t cad(void){
 
 static void sx1276_send()
 {
+    PacketParams_t     packet_params;
+    packet_params.PacketType                 = PACKET_TYPE_LORA;
+    packet_params.Params.LoRa.PreambleLength = 0x32u;    
+    packet_params.Params.LoRa.CrcMode        = LORA_CRC_OFF;
+    packet_params.Params.LoRa.InvertIQ       = LORA_IQ_NORMAL;
+    packet_params.Params.LoRa.HeaderType     = LORA_PACKET_EXPLICIT;
+    packet_params.Params.LoRa.PayloadLength  = phyTxSize;
+    SX1280SetPacketParams(&packet_params);
+    SX1280SetBufferBaseAddresses(0u, 128u);
     SX1280SendPayload(phyTxBuffer, phyTxSize, RX_TX_CONTINUOUS);
 }
 
@@ -314,9 +320,7 @@ void initRadio(void)
     
     
     SX1280Calibrate(calib_params);
-    SX1280SetRegulatorMode(USE_DCDC);
-    __delay_ms(100);
-    SX1280HalClearInstructionRam();  
+    SX1280SetRegulatorMode(USE_DCDC);  
     rad_ver = SX1280GetFirmwareVersion();    
     SX1280SetStandby(STDBY_RC);
 #if 0
