@@ -164,7 +164,7 @@ void receive(uint8_t size)
     PacketParams_t     packet_params;
     packet_params.PacketType                 = PACKET_TYPE_LORA;
     packet_params.Params.LoRa.PreambleLength = 0x32u;    
-    packet_params.Params.LoRa.CrcMode        = LORA_CRC_OFF;
+    packet_params.Params.LoRa.CrcMode        = LORA_CRC_ON;
     packet_params.Params.LoRa.InvertIQ       = LORA_IQ_NORMAL;
     if (0u != size) 
     {
@@ -212,8 +212,8 @@ static void DIO0_Receive_ISR(void)
     SX1280ClearIrqStatus(IRQ_RADIO_ALL);
     
     if (/*(0 == pktStatus.Params.LoRa.ErrorStatus.CrcError) && */
-        (0 == pktStatus.Params.LoRa.ErrorStatus.LengthError) &&
-        (0 == pktStatus.Params.LoRa.ErrorStatus.AbortError) &&
+        /*(0 == pktStatus.Params.LoRa.ErrorStatus.LengthError) && */
+        /*(0 == pktStatus.Params.LoRa.ErrorStatus.AbortError) && */
         (0 == pktStatus.Params.LoRa.ErrorStatus.SyncError) &&
         (0 != pktStatus.Params.LoRa.ErrorStatus.PacketReceived)) 
     {
@@ -291,7 +291,7 @@ static void sx1276_send()
     PacketParams_t     packet_params;
     packet_params.PacketType                 = PACKET_TYPE_LORA;
     packet_params.Params.LoRa.PreambleLength = 0x32u;    
-    packet_params.Params.LoRa.CrcMode        = LORA_CRC_OFF;
+    packet_params.Params.LoRa.CrcMode        = LORA_CRC_ON;
     packet_params.Params.LoRa.InvertIQ       = LORA_IQ_NORMAL;
     packet_params.Params.LoRa.HeaderType     = LORA_PACKET_EXPLICIT;
     packet_params.Params.LoRa.PayloadLength  = phyTxSize;
