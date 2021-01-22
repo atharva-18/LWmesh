@@ -13,9 +13,15 @@ Copyright 2020 Samuel Ramrajkar
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+#if defined(__PICC18__)
 #include "mcc.h"
+#else
+#include "system.h"
+#endif
 #include "crc.h"
+#include <stdbool.h>
 
+#if (_18F27K42 || _18F47K42 || _18F26K42)
 uint16_t crc16_app(void* dptr, uint16_t len, uint16_t seed){
     uint8_t* ptr = (uint8_t*)dptr;
     uint16_t result;
@@ -39,3 +45,12 @@ uint16_t crc16_app(void* dptr, uint16_t len, uint16_t seed){
     CRCCON0bits.EN = 0;
     return(result);
 }
+#endif
+
+#if (__32MM0256GPM048__)
+uint16_t crc16_app(void* dptr, uint16_t len, uint16_t seed)
+{
+    //@TODO implement CRC logic 
+    return 0;
+}
+#endif

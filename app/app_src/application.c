@@ -14,7 +14,11 @@ Copyright 2020 Samuel Ramrajkar
    limitations under the License.
 */
 #include <stdlib.h>
+#if defined(__PICC18__)
 #include "mcc.h"
+#else
+#include "system.h"
+#endif
 #include "application.h"
 #include "Timers.h"
 #include "crc.h"

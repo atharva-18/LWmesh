@@ -22,7 +22,11 @@ Copyright 2020 Samuel Ramrajkar
 
 #ifndef TIMERS_H
 #define	TIMERS_H
+#if defined(__PICC18__)
 #include "mcc.h"
+#else
+#include "system.h"
+#endif
 
 
 

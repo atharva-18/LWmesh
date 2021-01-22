@@ -1,4 +1,8 @@
+#if defined(__PICC18__)
 #include "mcc.h"
+#else
+#include "system.h"
+#endif
 #include "uart_default_control.h"
 #include "Timers.h"
 #include "application.h"

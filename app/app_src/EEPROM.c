@@ -13,7 +13,11 @@ Copyright 2020 Samuel Ramrajkar
    See the License for the specific language governing permissions and
    limitations under the License.
 */
+#if defined(__PICC18__)
 #include "mcc.h"
+#else
+#include "system.h"
+#endif
 #include "EEPROM.h"
 #include "application.h"
 #include "phy.h"
@@ -22,6 +26,11 @@ Copyright 2020 Samuel Ramrajkar
 #endif
 #ifdef SX1280
 #include "sx1280_drv.h"
+#endif
+
+#if (__32MM0256GPM048__)
+uint8_t DATAEE_ReadByte(uint32_t addr){}
+DATAEE_ReadByte(uint32_t addr, uint8_t data){}
 #endif
 
 uint8_t DATAEE_ReadByte_Platform(uint16_t addr){
