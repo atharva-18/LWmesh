@@ -27,15 +27,23 @@ Copyright 2020 Samuel Ramrajkar
 #else
 #include "system.h"
 #endif
-
+#if (__32MM0256GPM048__)
+#include "coretimer.h"
+#endif
 
 
 #ifdef	__cplusplus
 extern "C" {
 #endif
 
+#if (_18F27K42 || _18F47K42 || _18F26K42)
 #define Enter_Timer0_Critical()   PIE3bits.TMR0IE = 0;
 #define Exit_Timer0_Critical()    PIE3bits.TMR0IE = 1;
+#endif
+#if (__32MM0256GPM048__)
+#define Enter_Timer0_Critical()   CORETIMER_DisableInterrupt();
+#define Exit_Timer0_Critical()    CORETIMER_EnableInterrupt();
+#endif
 #define HAL_TIMER_INTERVAL        1ul // ms
     
     volatile uint16_t halTimerIrqCount = 0;

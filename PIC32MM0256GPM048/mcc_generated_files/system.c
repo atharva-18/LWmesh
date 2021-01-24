@@ -63,18 +63,18 @@
 #pragma config SWDTPS = PS1048576    //Sleep Mode Watchdog Timer Postscale Selection bits->1:1048576
 #pragma config FWDTWINSZ = PS25_0    //Watchdog Timer Window Size bits->Watchdog timer window size is 25%
 #pragma config WINDIS = OFF    //Windowed Watchdog Timer Disable bit->Watchdog timer is in non-window mode
-#pragma config RWDTPS = PS1048576    //Run Mode Watchdog Timer Postscale Selection bits->1:1048576
+#pragma config RWDTPS = PS4096    //Run Mode Watchdog Timer Postscale Selection bits->1:4096
 #pragma config RCLKSEL = LPRC    //Run Mode Watchdog Timer Clock Source Selection bits->Clock source is LPRC (same as for sleep mode)
 #pragma config FWDTEN = OFF    //Watchdog Timer Enable bit->WDT is disabled
 
 // FOSCSEL
 #pragma config FNOSC = FRCDIV    //Oscillator Selection bits->FRCDIV
-#pragma config PLLSRC = PRI    //System PLL Input Clock Selection bit->Primary oscillator is selected as PLL reference input on device reset
-#pragma config SOSCEN = ON    //Secondary Oscillator Enable bit->Secondary oscillator is enabled
+#pragma config PLLSRC = FRC    //System PLL Input Clock Selection bit->FRC oscillator is selected as PLL reference input on device reset
+#pragma config SOSCEN = OFF    //Secondary Oscillator Enable bit->Secondary oscillator is disabled
 #pragma config IESO = ON    //Two Speed Startup Enable bit->Two speed startup is enabled
-#pragma config POSCMOD = XT    //Primary Oscillator Selection bit->XT oscillator mode is selected
+#pragma config POSCMOD = OFF    //Primary Oscillator Selection bit->Primary oscillator is disabled
 #pragma config OSCIOFNC = OFF    //System Clock on CLKO Pin Enable bit->OSCO pin operates as a normal I/O
-#pragma config SOSCSEL = OFF    //Secondary Oscillator External Clock Enable bit->SOSC pins configured for Crystal mode
+#pragma config SOSCSEL = ON    //Secondary Oscillator External Clock Enable bit->SCLKI pin configured for Digital mode
 #pragma config FCKSM = CSECMD    //Clock Switching and Fail-Safe Clock Monitor Enable bits->Clock switching is enabled; Fail-safe clock monitor is disabled
 
 // FSEC
@@ -83,13 +83,14 @@
 #include "pin_manager.h"
 #include "clock.h"
 #include "system.h"
-#include "spi2.h"
 #include "coretimer.h"
-#include "uart3.h"
-#include "interrupt_manager.h"
-#include "exceptions.h"
 #include "dma.h"
 #include "crc.h"
+#include "spi2.h"
+#include "interrupt_manager.h"
+#include "exceptions.h"
+#include "uart3.h"
+#include "tmr3.h"
 
 void SYSTEM_Initialize(void)
 {
@@ -98,9 +99,10 @@ void SYSTEM_Initialize(void)
     INTERRUPT_Initialize();
     CORETIMER_Initialize();
     CRC_Initialize();
-    UART3_Initialize();
     DMA_Initialize();
     SPI2_Initialize();
+    UART3_Initialize();
+    TMR3_Initialize();
     INTERRUPT_GlobalEnable();
 }
 

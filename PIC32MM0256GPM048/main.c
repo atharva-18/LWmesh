@@ -46,7 +46,9 @@
   Section: Included Files
 */
 #include "mcc_generated_files/system.h"
-
+#include "../app_inc/application.h"
+#include "mcc_generated_files/pin_manager.h"
+#include "../sys_inc/sys.h"
 /*
                          Main application
  */
@@ -54,9 +56,14 @@ int main(void)
 {
     // initialize the device
     SYSTEM_Initialize();
+    SYS_Init();
+    bootLoadApplication();
+    LED_SetHigh();
     while (1)
     {
         // Add your application code
+        SYS_TaskHandler();
+        application();
     }
     return 1; 
 }

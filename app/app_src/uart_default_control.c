@@ -10,6 +10,9 @@
 #ifdef MBRTU
 #include "mb.h"
 #endif
+#if (__32MM0256GPM048__)
+#include "pin_manager.h"
+#endif
 
 #define BLEN_SAMPLE_TIME_MS     250
 extern uint8_t set_uart_baud(uint8_t i);

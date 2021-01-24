@@ -52,12 +52,12 @@ void CLOCK_Initialize(void)
     SYSTEM_RegUnlock();
     // ORPOL disabled; SIDL disabled; SRC SOSC; TUN Center frequency; POL disabled; ON disabled; 
     OSCTUN = 0x00;
-    // PLLODIV 1:4; PLLMULT 12x; PLLICLK POSC; 
-    SPLLCON = 0x2050000;
+    // PLLODIV 1:4; PLLMULT 12x; PLLICLK FRC; 
+    SPLLCON = 0x2050080;
     // SBOREN disabled; VREGS disabled; RETEN disabled; 
     PWRCON = 0x00;
-    // CF No Clock Failure; FRCDIV FRC/1; SLPEN Device will enter Idle mode when a WAIT instruction is issued; NOSC SPLL; SOSCEN enabled; CLKLOCK Clock and PLL selections are not locked and may be modified; OSWEN Switch is Complete; 
-    OSCCON = (0x102 | _OSCCON_OSWEN_MASK);
+    // CF No Clock Failure; FRCDIV FRC/1; SLPEN Device will enter Idle mode when a WAIT instruction is issued; NOSC SPLL; SOSCEN disabled; CLKLOCK Clock and PLL selections are not locked and may be modified; OSWEN Switch is Complete; 
+    OSCCON = (0x100 | _OSCCON_OSWEN_MASK);
     SYSTEM_RegLock();
     // Wait for Clock switch to occur 
     while(OSCCONbits.OSWEN == 1); 

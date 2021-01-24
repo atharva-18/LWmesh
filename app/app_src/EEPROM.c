@@ -28,11 +28,6 @@ Copyright 2020 Samuel Ramrajkar
 #include "sx1280_drv.h"
 #endif
 
-#if (__32MM0256GPM048__)
-uint8_t DATAEE_ReadByte(uint32_t addr){}
-DATAEE_ReadByte(uint32_t addr, uint8_t data){}
-#endif
-
 uint8_t DATAEE_ReadByte_Platform(uint16_t addr){
     uint8_t copy1, copy2, copy3;
     copy1 = DATAEE_ReadByte(addr);

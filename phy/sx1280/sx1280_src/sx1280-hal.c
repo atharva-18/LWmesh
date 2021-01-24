@@ -14,6 +14,9 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 Maintainer: Miguel Luis, Matthieu Verdy and Benjamin Boulet
 */
 #include "mcc.h"
+#if (__32MM0256GPM048__)
+#include "spi2.h"
+#endif
 #include "sx1280-hal.h"
 #include "radio.h"
 #include <string.h>
@@ -150,11 +153,13 @@ void SX1280HalIoIrqInit( DioIrqHandler **irqHandlers )
 
 void SX1280HalReset( void )
 {
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     __delay_ms(20);
     RADRST_SetLow();
     __delay_ms(50);
     RADRST_SetHigh();
     __delay_ms(20);
+#endif
 }
 
 void SX1280HalClearInstructionRam( void )
@@ -168,10 +173,20 @@ void SX1280HalClearInstructionRam( void )
 
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     SPI1_WriteBlock( halTxBuffer, 3 );
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(halTxBuffer, 3, NULL);
+#endif    
     for( uint16_t index = 0; index < IRAM_SIZE; index++ )
     {
+#if (_18F27K42 || _18F47K42 || _18F26K42)
         SPI1_ExchangeByte(0x00);
+#endif
+#if (__32MM0256GPM048__)        
+        SPI2_Exchange8bit(0x00);
+#endif
     }
     NSS_SetHigh();
 
@@ -184,7 +199,12 @@ void SX1280HalWakeup( void )
     uint16_t halSize = 2;
     halTxBuffer[0] = RADIO_GET_STATUS;
     halTxBuffer[1] = 0x00;
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     SPI1_WriteBlock( halTxBuffer, halSize );
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(halTxBuffer, halSize, NULL);
+#endif    
     NSS_SetHigh();
     // Wait for chip to be ready.
     SX1280HalWaitOnBusy( );
@@ -200,7 +220,12 @@ void SX1280HalWriteCommand( RadioCommands_t command, uint8_t *buffer, uint16_t s
     }
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     SPI1_WriteBlock( halTxBuffer, halSize );
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(halTxBuffer, halSize, NULL);
+#endif     
     NSS_SetHigh();
     if( command != RADIO_SET_SLEEP )
     {
@@ -216,8 +241,13 @@ void SX1280HalReadCommand( RadioCommands_t command, uint8_t *buffer, uint16_t si
     memset(halTxBuffer + 2U, 0, size);
 
     SX1280HalWaitOnBusy( );
-    NSS_SetLow();
+    NSS_SetLow(); 
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     SPI1_ExchangeBlock( halTxBuffer, halSize);
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(NULL, halSize, halTxBuffer);
+#endif 
     NSS_SetHigh();
     memcpy( buffer, halTxBuffer + 2, size );
     SX1280HalWaitOnBusy( );
@@ -233,7 +263,12 @@ void SX1280HalWriteRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
 
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     SPI1_WriteBlock( halTxBuffer, halSize );
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(halTxBuffer, halSize, NULL);
+#endif     
     NSS_SetHigh();
     SX1280HalWaitOnBusy( );
 }
@@ -254,7 +289,12 @@ void SX1280HalReadRegisters( uint16_t address, uint8_t *buffer, uint16_t size )
     
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
-    SPI1_ExchangeBlock( halTxBuffer, halSize );
+#if (_18F27K42 || _18F47K42 || _18F26K42)
+    SPI1_ExchangeBlock( halTxBuffer, halSize);
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(NULL, halSize, halTxBuffer);
+#endif    
     NSS_SetHigh();
     memcpy( buffer, halTxBuffer + 4, size );
 
@@ -277,7 +317,12 @@ void SX1280HalWriteBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
 
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     SPI1_WriteBlock( halTxBuffer, halSize );
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(halTxBuffer, halSize, NULL);
+#endif     
     NSS_SetHigh();
     SX1280HalWaitOnBusy( );
 }
@@ -292,7 +337,12 @@ void SX1280HalReadBuffer( uint8_t offset, uint8_t *buffer, uint8_t size )
     
     SX1280HalWaitOnBusy( );
     NSS_SetLow();
-    SPI1_ExchangeBlock( halTxBuffer, halSize );
+#if (_18F27K42 || _18F47K42 || _18F26K42)
+    SPI1_ExchangeBlock( halTxBuffer, halSize);
+#endif
+#if (__32MM0256GPM048__)
+    SPI2_Exchange8bitBuffer(NULL, halSize, halTxBuffer);
+#endif     
     memcpy( buffer, halTxBuffer + 3, size );
     NSS_SetHigh();
     SX1280HalWaitOnBusy( );
@@ -325,6 +375,11 @@ uint8_t SX1280HalGetDioStatus( void )
  * \retval      One byte read from radio
  */
 uint8_t SX1280HalExchangeByte( uint8_t byte )
-{
+{    
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     return SPI1_ExchangeByte(byte);
+#endif
+#if (__32MM0256GPM048__)
+    return SPI2_Exchange8bit(byte);
+#endif     
 }

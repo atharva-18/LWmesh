@@ -57,6 +57,15 @@ enum UART_PARITY_ENUM {
     UART_PARITY_SENTINAL
 };  
 
+#if (__32MM0256GPM048__)
+enum PIC32_UART_PARITY_ENUM {
+    P8N = 0,
+    P8E,
+    P8O,
+    P9N
+};
+#endif
+
 //UART baud rate setting
 enum UART_BAUD_ENUM {
     UART_BAUD_9600 = 0,
@@ -354,22 +363,6 @@ uint16_t reset_timer = 0;
  * \param [IN] None.
  */
 void processATCommand(void);
-
-/*!
- * \brief Send OK message over UART
- *
- * \param [OUT] None.
- * \param [IN] None.
- */
-void sendOKMessage(void);
-
-/*!
- * \brief Send message over UART
- *
- * \param [OUT] None.
- * \param [IN] String pointer.
- */
-void sendUARTMessage(char*);
 
 /*!
  * \brief Send information message

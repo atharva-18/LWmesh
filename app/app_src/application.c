@@ -18,6 +18,7 @@ Copyright 2020 Samuel Ramrajkar
 #include "mcc.h"
 #else
 #include "system.h"
+#include <xc.h>
 #endif
 #include "application.h"
 #include "Timers.h"
@@ -37,6 +38,10 @@ Copyright 2020 Samuel Ramrajkar
 #endif
 #ifdef FULLFEATURE
 #include "I2C_EEPROM.h"
+#endif
+#if (__32MM0256GPM048__)
+#include "uart3.h"
+#include "pin_manager.h"
 #endif
 
 #define swap_16(x) ((x << 8) | (x >> 8))
@@ -298,12 +303,14 @@ static bool get_free_rx_buffer(uint8_t *buf_id){
  * \param [IN] Parity mode.
  */
 static void UART_error_handler(){
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     volatile temp = U1RXB;
     //Clear the RX buffer
     while(UART1_is_rx_ready()){
         UART1_Read();
     }
     U1ERRIRbits.RXFOIF = 0;
+#endif
 }
 
 /*!
@@ -317,35 +324,50 @@ uint8_t set_parity(uint8_t parity)
     if((parity >= UART_PARITY_SENTINAL) || (UART_7BIT_MODE == parity)){
         return ILLEGALPARAMETER; //illegal value
     }
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     U1CON1 &= 0b01111111; //Disable the UART
     U1CON0 &= 0b11110000; //Clear old mode
     U1CON0 |= (parity & 0b00001111); //Reprogram new mode
     U1CON2 &=~ (0b00110000); //Set one stop bit
     U1CON1 |= 0b10000000; //Reenable the UART
+#endif
     switch(parity){
         case UART_8BIT_NO_PARITY:
+            #if (__32MM0256GPM048__)
+            U3MODEbits.PDSEL = P8N;
+            #endif  
             uart_parity = UART_8BIT_NO_PARITY;
 #ifdef MBRTU                    
             curent_parity = MB_PAR_NONE;
 #endif
             break;
         case UART_9BIT_ODD_PARITY:
+            #if (__32MM0256GPM048__)
+            U3MODEbits.PDSEL = P8O;
+            #endif
             uart_parity = UART_9BIT_ODD_PARITY;
 #ifdef MBRTU
             curent_parity = MB_PAR_ODD;
 #endif
             break;
         case UART_9BIT_EVEN_PARITY:
+            #if (__32MM0256GPM048__)
+            U3MODEbits.PDSEL = P8E;
+            #endif
             uart_parity = UART_9BIT_EVEN_PARITY;
 #ifdef MBRTU
             curent_parity = MB_PAR_EVEN;
 #endif
             break;
         default:
+            #if (__32MM0256GPM048__)
+            U3MODEbits.PDSEL = P8N;
+            #endif
             uart_parity = UART_8BIT_NO_PARITY;
 #ifdef MBRTU
             curent_parity = MB_PAR_NONE;
 #endif
+            break;
     }
     return E_OK;
 }
@@ -358,6 +380,7 @@ uint8_t set_parity(uint8_t parity)
  */
 uint8_t set_uart_baud(uint8_t i)
 {
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     U1CON1 &= ~(1<<7); //Disable the UART    
     switch(i)
     {
@@ -405,6 +428,7 @@ uint8_t set_uart_baud(uint8_t i)
             return ILLEGALPARAMETER;
     }
     U1CON1 |= (1<<7); //Reenable the UART
+#endif
     return E_OK;
 }
 
@@ -696,7 +720,12 @@ static void cmdRecv(){
             }
             while((rx_buffer[buf_id].rx_ind.size--) && 
                     rx_buffer[buf_id].payload[i]){
+            #if (_18F27K42 || _18F47K42 || _18F26K42)
                 putch(rx_buffer[buf_id].payload[i++]);
+            #endif
+            #if (__32MM0256GPM048__)
+                UART3_Write(rx_buffer[buf_id].payload[i++]);
+            #endif
             }
             printf("\r\nRSSI:%i\r\n", rx_buffer[buf_id].rx_ind.rssi);
             rx_buffer[buf_id].free = 1;
@@ -734,7 +763,7 @@ static void cmdMac(){
  * \param [IN] None.
  */
 
-static void cmdSetSink(*cmd){
+static void cmdSetSink(uint8_t *cmd){
 	char msgstr[16];
 	uint8_t buf_id, needed_size;   
     uint16_t new_sink = (currentAddr0 << 8) | currentAddr1;
@@ -1043,8 +1072,14 @@ static void cmdSetCADRSSI(char* atCommand){
  */
 static void cmdReset(){
     printf("OK\r\n");
-    __delay_ms(500);
-	RESET();
+    set_timer0base(&cadTimeOut, 500);
+	while(0 != get_timer0base(&cadTimeOut));
+#if (_18F27K42 || _18F47K42 || _18F26K42)
+    RESET();
+#endif
+#if (__32MM0256GPM048__)
+    __pic32_software_reset();
+#endif
 	while(1);
 }
 
@@ -1085,8 +1120,14 @@ static void cmdSetParity(char* atCommand){
 static void cmdBootLoad(){
     DATAEE_WriteByte_Platform(REQBootLoad,0x00);
     printf("OK\r\n");
-    __delay_ms(500);
+    set_timer0base(&cadTimeOut, 500);
+	while(0 != get_timer0base(&cadTimeOut));
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     RESET();
+#endif
+#if (__32MM0256GPM048__)
+    __pic32_software_reset();
+#endif
 }
 
 /*!
@@ -1534,10 +1575,12 @@ static uint8_t executeATCommand(char* cmd){
 void processATCommand(void)
 {
     //Check if RS485 tx should be turned off
+#if 0
     if(tx_done && U1ERRIRbits.TXMTIF){
 //       TXEN_SetLow();
        tx_done = 0;
     }
+#endif
     //Check if there is a command halfway thru and it timed out   
     if(((atStateVar != lookingForA) || (atStateVar != processCommand)) && 
             (!get_timer0base(&ATTimeoutTimer)))        {
@@ -1549,9 +1592,19 @@ void processATCommand(void)
             break;
         case lookingForA:
             //Read a byte if it is available
+            #if (_18F27K42 || _18F47K42 || _18F26K42)
             if(UART1_is_rx_ready()){
+            #endif
+            #if (__32MM0256GPM048__)
+            if(true == UART3_IsRxReady()){
+            #endif  
                 //There is a byte available
+                #if (_18F27K42 || _18F47K42 || _18F26K42)
                 if(UART1_Read() == 'A')
+                #endif
+                #if (__32MM0256GPM048__)
+                if(UART3_Read() == 'A')
+                #endif
                 {
                     //Found 'A'
                     atStateVar = lookingForT;
@@ -1560,9 +1613,19 @@ void processATCommand(void)
             }                
             break;        
         case lookingForT:
+            #if (_18F27K42 || _18F47K42 || _18F26K42)
             if(UART1_is_rx_ready()){
+            #endif
+            #if (__32MM0256GPM048__)
+            if(true == UART3_IsRxReady()){
+            #endif 
                 //There is a byte available
-                if(UART1_Read() == 'T')
+                #if (_18F27K42 || _18F47K42 || _18F26K42)
+                if(UART1_Read() == 'A')
+                #endif
+                #if (__32MM0256GPM048__)
+                if(UART3_Read() == 'A')
+                #endif
                 {
                     //Found 'T'
                     atStateVar = readingCommand;
@@ -1575,9 +1638,18 @@ void processATCommand(void)
             break;            
         case readingCommand:
             //Found a AT command start now read till it is /r
-            if(UART1_is_rx_ready())
-            {
+            #if (_18F27K42 || _18F47K42 || _18F26K42)
+            if(UART1_is_rx_ready()){
+            #endif
+            #if (__32MM0256GPM048__)
+            if(true == UART3_IsRxReady()){
+            #endif 
+                #if (_18F27K42 || _18F47K42 || _18F26K42)
                 uint8_t data = UART1_Read();
+                #endif  
+                #if (__32MM0256GPM048__)
+                uint8_t data = UART3_Read();
+                #endif
                 if(data == '\r')
                 {
                     //End of the AT command
@@ -1598,9 +1670,18 @@ void processATCommand(void)
             break;         
         case endingCommand:
             //Found an end of AT command. Wait for /n
-            if(UART1_is_rx_ready())
-            {
+            #if (_18F27K42 || _18F47K42 || _18F26K42)
+            if(UART1_is_rx_ready()){
+            #endif
+            #if (__32MM0256GPM048__)
+            if(true == UART3_IsRxReady()){
+            #endif 
+                #if (_18F27K42 || _18F47K42 || _18F26K42)
                 uint8_t data = UART1_Read();
+                #endif  
+                #if (__32MM0256GPM048__)
+                uint8_t data = UART3_Read();
+                #endif
                 if(data == '\n')
                 {
                     //Found new line character. Now process the command
@@ -1635,37 +1716,6 @@ void processATCommand(void)
 }
 
 /*!
- * \brief Send OK message over UART
- *
- * \param [OUT] None.
- * \param [IN] None.
- */
-void sendOKMessage(void)
-{
-    char databuf[] = "OK\r\n";
-    for(uint8_t i = 0;i < (sizeof(databuf)-1); i++)
-    {
-        UART1_Write(databuf[i]);
-    }
-}
-
-/*!
- * \brief Send message over UART
- *
- * \param [OUT] None.
- * \param [IN] String pointer.
- */
-void sendUARTMessage(char* msg)
-{
-    uint8_t sizemsg = strlen(msg);
-    for(uint8_t i = 0;i < sizemsg; i++)
-    {
-        UART1_Write(*msg);
-        msg++;
-    }
-}
-
-/*!
  * \brief Send information message
  *
  * \param [OUT] None.
@@ -1695,10 +1745,15 @@ void sendInfo(void)
  */
 static void loadMACAddr(void)
 {    
-    //Load the UUT serial number from EEPROM   
+    #if (_18F27K42 || _18F47K42 || _18F26K42)
     for(uint8_t i = 0; i < sizeof(EUIDbyte);i++){
         EUIDbyte[sizeof(EUIDbyte) - 1 - i] = (uint8_t)DIA_ReadByte(0x3F0000 + i);        
     }
+    #endif  
+    #if (__32MM0256GPM048__)
+    memcpy(EUIDbyte, (uint8_t*)0xBFC41840, sizeof(EUIDbyte));
+    #endif   
+    
 #ifdef MBRTU
     for(uint8_t i = 0; i < 6;i++){
         read_only_mb_regs[i + 1] = (EUIDbyte[i*2] << 8) | EUIDbyte[(i*2) + 1];
@@ -1849,9 +1904,11 @@ void bootLoadApplication(void)
     eMBInit( MB_RTU, mb_rtu_addr, 0, current_baud_rate, curent_parity);
     eMBEnable();
 #endif
+#if (_18F27K42 || _18F47K42 || _18F26K42)
     UART1_SetFramingErrorHandler(UART_error_handler);
     UART1_SetOverrunErrorHandler(UART_error_handler);
     UART1_SetErrorHandler(UART_error_handler);
+#endif
     /*Init the Stack*/
     //Free all app buffers used with stack
     for(uint8_t buf_id = 0; buf_id < APP_TX_BUFFER_DEPTH; buf_id++){
@@ -1868,9 +1925,12 @@ void bootLoadApplication(void)
     NWK_SetPanId(pan_id);
     NWK_OpenEndpoint(DATA_EP, appDataInd);
     NWK_OpenEndpoint(MANAGEMENT_EP, appManagementEp);
-    TMR0_SetInterruptHandler(Timer0Handler);    
+#if (_18F27K42 || _18F47K42 || _18F26K42)
+    TMR0_SetInterruptHandler(Timer0Handler); 
+#endif
 }
 
+#if (_18F27K42 || _18F47K42 || _18F26K42)
 /*!
  * \brief Load necessary information from EEPROM and bootload app
  *
@@ -1886,6 +1946,7 @@ void UART1_framing_error_handler(void)
     (void)temp;
     U1ERRIR &=~ (1 << 6);  //Reset the error flag
 }
+#endif
 
 #ifdef MBRTU
 static uint8_t keycmp(uint16_t* key, uint16_t* new, uint8_t size){
