@@ -61,7 +61,7 @@ void PIN_MANAGER_Initialize (void)
     /****************************************************************************
      * Setting the Output Latch SFR(s)
      ***************************************************************************/
-    LATA = 0x8004;
+    LATA = 0x8000;
     LATB = 0x0248;
     LATC = 0x0004;
     LATD = 0x0000;
@@ -78,7 +78,7 @@ void PIN_MANAGER_Initialize (void)
      * Setting the Weak Pull Up and Weak Pull Down SFR(s)
      ***************************************************************************/
     CNPDA = 0x0000;
-    CNPDB = 0x0000;
+    CNPDB = 0x8000;
     CNPDC = 0x0000;
     CNPDD = 0x0000;
     CNPUA = 0x0000;
@@ -107,12 +107,12 @@ void PIN_MANAGER_Initialize (void)
     SYSTEM_RegUnlock(); // unlock PPS
     RPCONbits.IOLOCK = 0;
 
+    RPINR11bits.SDI2R = 0x0012;    //RC9->SPI2:SDI2
     RPINR8bits.U3RXR = 0x0004;    //RA3->UART3:U3RX
+    RPINR11bits.SCK2INR = 0x0017;    //RC6->SPI2:SCK2OUT
     RPOR4bits.RP19R = 0x0006;    //RC2->UART3:U3TX
     RPOR4bits.RP20R = 0x0008;    //RC7->SPI2:SDO2
     RPOR5bits.RP23R = 0x0009;    //RC6->SPI2:SCK2OUT
-    RPINR11bits.SDI2R = 0x0012;    //RC9->SPI2:SDI2
-    RPINR11bits.SCK2INR = 0x0017;    //RC6->SPI2:SCK2OUT
 
     RPCONbits.IOLOCK = 1; // lock   PPS
     SYSTEM_RegLock(); 

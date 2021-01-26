@@ -29,6 +29,8 @@ Copyright 2020 Samuel Ramrajkar
 #endif
 #if (__32MM0256GPM048__)
 #include "coretimer.h"
+#include "../mcc_generated_files/pin_manager.h"
+#include "../mcc_generated_files/uart3.h"
 #endif
 
 

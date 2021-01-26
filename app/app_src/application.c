@@ -1624,7 +1624,7 @@ void processATCommand(void)
                 if(UART1_Read() == 'A')
                 #endif
                 #if (__32MM0256GPM048__)
-                if(UART3_Read() == 'A')
+                if(UART3_Read() == 'T')
                 #endif
                 {
                     //Found 'T'
@@ -1845,7 +1845,9 @@ void bootLoadApplication(void)
         DATAEE_WriteByte_Platform(UARTParity,UART_9BIT_EVEN_PARITY);
     }
     //Configure the UART
+#if (_18F27K42 || _18F47K42 || _18F26K42)    
     set_parity(i);
+#endif
     
     //Load the saved baud  rate
     i = DATAEE_ReadByte_Platform(UARTBaud);
@@ -2452,6 +2454,13 @@ static void exract_sink_addr(uint8_t* dataptr){
 
 inline void application(void){
     //start_loop_timer();
+    start_loop_timer();
+#if (__32MM0256GPM048__)
+    if(true == UART3_IsTxDone())
+    {
+        TXEN_SetLow();
+    }
+#endif
 #ifdef ATCOMM
     processATCommand();
 #endif

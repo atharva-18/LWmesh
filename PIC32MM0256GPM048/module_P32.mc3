@@ -63,7 +63,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="UMODE" settingAlias="CLKSEL"/>
-         <value>PBCLK</value>
+         <value>FRC</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="Pin Module" registerAlias="CNPDA" settingAlias="CNPDA7"/>
@@ -151,7 +151,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="UART3" name="BaudRateError"/>
-         <value>-0.160</value>
+         <value>0.160</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="Pin Module" registerAlias="ANSELB" settingAlias="ANSB4"/>
@@ -631,7 +631,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="Pin Module" registerAlias="CNPDB" settingAlias="CNPDB15"/>
-         <value>disabled</value>
+         <value>enabled</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="SPI2" registerAlias="SPICON2" settingAlias="AUDMONO" alias="enabled"/>
@@ -639,7 +639,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="UBRG" settingAlias="BRG"/>
-         <value>312</value>
+         <value>103</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="INTERNAL OSCILLATOR" registerAlias="OSCTUN" settingAlias="TUN" alias="Center Frequency+1.175%"/>
@@ -1591,7 +1591,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="UMODE" settingAlias="RTSMD"/>
-         <value>enabled</value>
+         <value>disabled</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="Pin Module" registerAlias="LATB" settingAlias="LATB3"/>
@@ -3383,7 +3383,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="UART3" name="InternalClock"/>
-         <value>24000000</value>
+         <value>8000000</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="Pin Module" registerAlias="CNSTATA" settingAlias="CNSTATA1"/>
@@ -3423,7 +3423,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="USTA" settingAlias="URXEN"/>
-         <value>disabled</value>
+         <value>enabled</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="DMA-CRC" registerAlias="DCH3CON" settingAlias="CHAED3" alias="disabled"/>
@@ -4987,7 +4987,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="Pin Module" registerAlias="CNPDB"/>
-         <value>0</value>
+         <value>32768</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="INTERNAL OSCILLATOR" registerAlias="OSCTUN" settingAlias="TUN" alias="Center Frequency-0.047%"/>
@@ -5183,7 +5183,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="UMODE" settingAlias="OVFDIS"/>
-         <value>disabled</value>
+         <value>enabled</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="INTERNAL OSCILLATOR" registerAlias="OSCCON" settingAlias="OSWEN" alias="Request Switch"/>
@@ -5287,7 +5287,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="UART3" registerAlias="USTA"/>
-         <value>0</value>
+         <value>5120</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="Pin Module" registerAlias="CNEN1B" settingAlias="CNIE1B15" alias="enabled"/>
@@ -5331,7 +5331,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.CustomKey" moduleName="UART3" name="FlowControl"/>
-         <value>Hardware</value>
+         <value>None</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="Pin Module" registerAlias="CNSTATB"/>
@@ -5575,7 +5575,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="USTA" settingAlias="UTXEN"/>
-         <value>disabled</value>
+         <value>enabled</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="DMA-CRC" registerAlias="DCH3SPTR" settingAlias="CHSPTR3"/>
@@ -6027,7 +6027,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="UART3" registerAlias="UBRG"/>
-         <value>312</value>
+         <value>103</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="Pin Module" registerAlias="LATA" settingAlias="LATA3" alias="set"/>
@@ -6171,7 +6171,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="URXI" settingAlias="priority"/>
-         <value>1</value>
+         <value>2</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="Pin Module" registerAlias="CNFC" settingAlias="CNFC0"/>
@@ -8467,7 +8467,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="Pin Module" registerAlias="LATA" settingAlias="LATA2"/>
-         <value>set</value>
+         <value>clear</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="DMA-CRC" registerAlias="DMA1I" settingAlias="priority"/>
@@ -8487,7 +8487,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="Pin Module" registerAlias="LATA"/>
-         <value>32772</value>
+         <value>32768</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="INTERNAL OSCILLATOR" registerAlias="OSCTUN" settingAlias="TUN" alias="Center Frequency-0.188%"/>
@@ -10083,7 +10083,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="UERI" settingAlias="priority"/>
-         <value>1</value>
+         <value>2</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="UART3" registerAlias="UMODE" settingAlias="WAKE" alias="enabled"/>
@@ -11615,7 +11615,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="UART3" registerAlias="UTXI" settingAlias="priority"/>
-         <value>1</value>
+         <value>2</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.SettingKey" moduleName="SPI2" registerAlias="SPICON" settingAlias="CKP"/>
@@ -11723,7 +11723,7 @@
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.RegisterKey" moduleName="UART3" registerAlias="UMODE"/>
-         <value>34828</value>
+         <value>360460</value>
       </entry>
       <entry>
          <key class="com.microchip.mcc.core.tokenManager.OptionKey" moduleName="Pin Module" registerAlias="TRISA" settingAlias="TRISA2" alias="output"/>
@@ -12357,7 +12357,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\uart3.c</file>
-         <hash>ed0179be61676fcd4135ab5b2a3fc78a366c2368a73a068beb2d682503d7e404</hash>
+         <hash>d126a5bbdaaf63198550894e69e3318818992832eec8c95c2a6ac2fc83ee996b</hash>
       </entry>
       <entry>
          <file>main.c</file>
@@ -12381,7 +12381,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\pin_manager.c</file>
-         <hash>21b4dbc3dff4ded7821b823c17903cc399f75ff888ac1752de2b3021b66584f1</hash>
+         <hash>536c2025a91f8cc08772e861b6d080ea0315e7fa3c28bed6cbf3b4509b05842b</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\coretimer.c</file>
@@ -12393,7 +12393,7 @@
       </entry>
       <entry>
          <file>mcc_generated_files\interrupt_manager.c</file>
-         <hash>9ceaa2b7010dcc343ad2ed047c652fa8c97208d7bd2e21da0eb1e163e3db7cc5</hash>
+         <hash>3bda787e564e2d2d8782b90023fc76025927fd08d1475fd5fa30b68edce8d2ec</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\watchdog.h</file>

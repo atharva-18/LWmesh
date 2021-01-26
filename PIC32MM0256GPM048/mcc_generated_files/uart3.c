@@ -105,15 +105,15 @@ void UART3_Initialize(void)
     IEC1bits.U3TXIE = 0;
     IEC1bits.U3RXIE = 0;
 
-    // STSEL 1; PDSEL 8O; RTSMD enabled; OVFDIS disabled; ACTIVE disabled; RXINV disabled; WAKE disabled; BRGH enabled; IREN disabled; ON enabled; SLPEN disabled; SIDL disabled; ABAUD disabled; LPBACK disabled; UEN TX_RX; CLKSEL PBCLK; 
+    // STSEL 1; PDSEL 8O; RTSMD disabled; OVFDIS enabled; ACTIVE disabled; RXINV disabled; WAKE disabled; BRGH enabled; IREN disabled; ON enabled; SLPEN disabled; SIDL disabled; ABAUD disabled; LPBACK disabled; UEN TX_RX; CLKSEL FRC; 
     // Data Bits = 8; Parity = Odd; Stop Bits = 1;
-    U3MODE = (0x880C & ~(1<<15));  // disabling UART ON bit
-    // UTXISEL TX_ONE_CHAR; UTXINV disabled; ADDR 0; MASK 0; URXEN disabled; OERR disabled; URXISEL RX_ONE_CHAR; UTXBRK disabled; UTXEN disabled; ADDEN disabled; 
-    U3STA = 0x00;
+    U3MODE = (0x5800C & ~(1<<15));  // disabling UART ON bit
+    // UTXISEL TX_ONE_CHAR; UTXINV disabled; ADDR 0; MASK 0; URXEN enabled; OERR disabled; URXISEL RX_ONE_CHAR; UTXBRK disabled; UTXEN enabled; ADDEN disabled; 
+    U3STA = 0x1400;
     // U3TXREG 0; 
     U3TXREG = 0x00;
-    // BaudRate = 19200; Frequency = 24000000 Hz; BRG 312; 
-    U3BRG = 0x138;
+    // BaudRate = 19200; Frequency = 8000000 Hz; BRG 103; 
+    U3BRG = 0x67;
     
     txHead = txQueue;
     txTail = txQueue;
@@ -151,7 +151,7 @@ void UART3_SetTxInterruptHandler(void (* interruptHandler)(void))
 
 }
 
-void __attribute__ ((vector(_UART3_TX_VECTOR), interrupt(IPL1SOFT))) _UART3_TX ( void )
+void __attribute__ ((vector(_UART3_TX_VECTOR), interrupt(IPL2SOFT))) _UART3_TX ( void )
 {
     if(UART3_TxDefaultInterruptHandler)
     {
@@ -201,7 +201,7 @@ void UART3_SetRxInterruptHandler(void (* interruptHandler)(void))
     }
 }
 
-void __attribute__ ((vector(_UART3_RX_VECTOR), interrupt(IPL1SOFT))) _UART3_RX( void )
+void __attribute__ ((vector(_UART3_RX_VECTOR), interrupt(IPL2SOFT))) _UART3_RX( void )
 {
     if(UART3_RxDefaultInterruptHandler)
     {
@@ -239,7 +239,7 @@ void __attribute__ ((weak)) UART3_Receive_CallBack(void)
 
 }
 
-void __attribute__ ((vector(_UART3_ERR_VECTOR), interrupt(IPL1SOFT))) _UART3_ERR( void )
+void __attribute__ ((vector(_UART3_ERR_VECTOR), interrupt(IPL2SOFT))) _UART3_ERR( void )
 {
     if ((U3STAbits.OERR == 1))
     {
