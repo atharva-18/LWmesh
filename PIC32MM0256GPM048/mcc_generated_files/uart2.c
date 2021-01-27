@@ -1,17 +1,17 @@
 /**
-  UART3 Generated Driver File 
+  UART2 Generated Driver File 
 
   @Company
     Microchip Technology Inc.
 
   @File Name
-    uart3.c
+    uart2.c
 
   @Summary
-    This is the generated source file for the UART3 driver using PIC24 / dsPIC33 / PIC32MM MCUs
+    This is the generated source file for the UART2 driver using PIC24 / dsPIC33 / PIC32MM MCUs
 
   @Description
-    This source file provides APIs for driver for UART3. 
+    This source file provides APIs for driver for UART2. 
     Generation Information : 
         Product Revision  :  PIC24 / dsPIC33 / PIC32MM MCUs - 1.170.0
         Device            :  PIC32MM0256GPM048
@@ -49,7 +49,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "xc.h"
-#include "uart3.h"
+#include "uart2.h"
 
 /**
   Section: Data Type Definitions
@@ -80,8 +80,8 @@ static bool volatile rxOverflowed;
  * when head == tail.  So full will result in head/tail being off by one due to
  * the extra byte.
  */
-#define UART3_CONFIG_TX_BYTEQ_LENGTH (64+1)
-#define UART3_CONFIG_RX_BYTEQ_LENGTH (64+1)
+#define UART2_CONFIG_TX_BYTEQ_LENGTH (128+1)
+#define UART2_CONFIG_RX_BYTEQ_LENGTH (0+1)
 
 /** UART Driver Queue
 
@@ -90,30 +90,30 @@ static bool volatile rxOverflowed;
 
 */
 
-static uint8_t txQueue[UART3_CONFIG_TX_BYTEQ_LENGTH];
-static uint8_t rxQueue[UART3_CONFIG_RX_BYTEQ_LENGTH];
+static uint8_t txQueue[UART2_CONFIG_TX_BYTEQ_LENGTH];
+static uint8_t rxQueue[UART2_CONFIG_RX_BYTEQ_LENGTH];
 
-void (*UART3_TxDefaultInterruptHandler)(void);
-void (*UART3_RxDefaultInterruptHandler)(void);
+void (*UART2_TxDefaultInterruptHandler)(void);
+void (*UART2_RxDefaultInterruptHandler)(void);
 
 /**
   Section: Driver Interface
 */
 
-void UART3_Initialize(void)
+void UART2_Initialize(void)
 {
-    IEC1bits.U3TXIE = 0;
-    IEC1bits.U3RXIE = 0;
+    IEC1bits.U2TXIE = 0;
+    IEC1bits.U2RXIE = 0;
 
-    // STSEL 1; PDSEL 8O; RTSMD disabled; OVFDIS enabled; ACTIVE disabled; RXINV disabled; WAKE disabled; BRGH enabled; IREN disabled; ON enabled; SLPEN disabled; SIDL disabled; ABAUD disabled; LPBACK disabled; UEN TX_RX; CLKSEL REFCLKO; 
-    // Data Bits = 8; Parity = Odd; Stop Bits = 1;
-    U3MODE = (0x7800C & ~(1<<15));  // disabling UART ON bit
-    // UTXISEL TX_ONE_CHAR; UTXINV disabled; ADDR 0; MASK 0; URXEN enabled; OERR disabled; URXISEL RX_ONE_CHAR; UTXBRK disabled; UTXEN disabled; ADDEN disabled; 
-    U3STA = 0x1000;
-    // U3TXREG 0; 
-    U3TXREG = 0x00;
-    // BaudRate = 19200; Frequency = 8000000.0 Hz; BRG 103; 
-    U3BRG = 0x67;
+    // STSEL 2; PDSEL 8O; RTSMD disabled; OVFDIS disabled; ACTIVE disabled; RXINV disabled; WAKE disabled; BRGH enabled; IREN disabled; ON enabled; SLPEN disabled; SIDL disabled; ABAUD disabled; LPBACK disabled; UEN TX_RX; CLKSEL SYSCLK; 
+    // Data Bits = 8; Parity = Odd; Stop Bits = 2;
+    U2MODE = (0x2800D & ~(1<<15));  // disabling UART ON bit
+    // UTXISEL TX_ONE_CHAR; UTXINV disabled; ADDR 0; MASK 0; URXEN disabled; OERR disabled; URXISEL RX_ONE_CHAR; UTXBRK disabled; UTXEN enabled; ADDEN disabled; 
+    U2STA = 0x400;
+    // U2TXREG 0; 
+    U2TXREG = 0x00;
+    // BaudRate = 19200; Frequency = 24000000 Hz; BRG 312; 
+    U2BRG = 0x138;
     
     txHead = txQueue;
     txTail = txQueue;
@@ -122,55 +122,55 @@ void UART3_Initialize(void)
    
     rxOverflowed = false;
 
-    UART3_SetTxInterruptHandler(&UART3_Transmit_CallBack);
+    UART2_SetTxInterruptHandler(&UART2_Transmit_CallBack);
 
-    UART3_SetRxInterruptHandler(&UART3_Receive_CallBack);
+    UART2_SetRxInterruptHandler(&UART2_Receive_CallBack);
 
-    IEC1bits.U3RXIE = 1;
+    IEC1bits.U2RXIE = 1;
     
     //Make sure to set LAT bit corresponding to TxPin as high before UART initialization
-    U3STASET = _U3STA_UTXEN_MASK;
-    U3MODESET = _U3MODE_ON_MASK;   // enabling UART ON bit
-    U3STASET = _U3STA_URXEN_MASK;
+    U2STASET = _U2STA_UTXEN_MASK;
+    U2MODESET = _U2MODE_ON_MASK;   // enabling UART ON bit
+    U2STASET = _U2STA_URXEN_MASK;
 }
 
 /**
     Maintains the driver's transmitter state machine and implements its ISR
 */
 
-void UART3_SetTxInterruptHandler(void (* interruptHandler)(void))
+void UART2_SetTxInterruptHandler(void (* interruptHandler)(void))
 {
     if(interruptHandler == NULL)
     {
-        UART3_TxDefaultInterruptHandler = &UART3_Transmit_CallBack;
+        UART2_TxDefaultInterruptHandler = &UART2_Transmit_CallBack;
     }
     else
     {
-        UART3_TxDefaultInterruptHandler = interruptHandler;
+        UART2_TxDefaultInterruptHandler = interruptHandler;
     }
 
 }
 
-void __attribute__ ((vector(_UART3_TX_VECTOR), interrupt(IPL2SOFT))) _UART3_TX ( void )
+void __attribute__ ((vector(_UART2_TX_VECTOR), interrupt(IPL1SOFT))) _UART2_TX ( void )
 {
-    if(UART3_TxDefaultInterruptHandler)
+    if(UART2_TxDefaultInterruptHandler)
     {
-        UART3_TxDefaultInterruptHandler();
+        UART2_TxDefaultInterruptHandler();
     }
     
     if(txHead == txTail)
     {
-        IEC1bits.U3TXIE = 0;
+        IEC1bits.U2TXIE = 0;
     }
     else
     {
-        IFS1CLR= 1 << _IFS1_U3TXIF_POSITION;
+        IFS1CLR= 1 << _IFS1_U2TXIF_POSITION;
 
-        while(!(U3STAbits.UTXBF == 1))
+        while(!(U2STAbits.UTXBF == 1))
         {
-            U3TXREG = *txHead++;
+            U2TXREG = *txHead++;
 
-            if(txHead == (txQueue + UART3_CONFIG_TX_BYTEQ_LENGTH))
+            if(txHead == (txQueue + UART2_CONFIG_TX_BYTEQ_LENGTH))
             {
                 txHead = txQueue;
             }
@@ -184,44 +184,44 @@ void __attribute__ ((vector(_UART3_TX_VECTOR), interrupt(IPL2SOFT))) _UART3_TX (
     }
 }
 
-void __attribute__ ((weak)) UART3_Transmit_CallBack ( void )
+void __attribute__ ((weak)) UART2_Transmit_CallBack ( void )
 { 
 
 }
 
-void UART3_SetRxInterruptHandler(void (* interruptHandler)(void))
+void UART2_SetRxInterruptHandler(void (* interruptHandler)(void))
 {
     if(interruptHandler == NULL)
     {
-        UART3_RxDefaultInterruptHandler = &UART3_Receive_CallBack;
+        UART2_RxDefaultInterruptHandler = &UART2_Receive_CallBack;
     }
     else
     {
-        UART3_RxDefaultInterruptHandler = interruptHandler;
+        UART2_RxDefaultInterruptHandler = interruptHandler;
     }
 }
 
-void __attribute__ ((vector(_UART3_RX_VECTOR), interrupt(IPL2SOFT))) _UART3_RX( void )
+void __attribute__ ((vector(_UART2_RX_VECTOR), interrupt(IPL1SOFT))) _UART2_RX( void )
 {
-    if(UART3_RxDefaultInterruptHandler)
+    if(UART2_RxDefaultInterruptHandler)
     {
-        UART3_RxDefaultInterruptHandler();
+        UART2_RxDefaultInterruptHandler();
     }
     
-    IFS1CLR= 1 << _IFS1_U3RXIF_POSITION;
+    IFS1CLR= 1 << _IFS1_U2RXIF_POSITION;
 	
-    while((U3STAbits.URXDA == 1))
+    while((U2STAbits.URXDA == 1))
     {
-        *rxTail = U3RXREG;
+        *rxTail = U2RXREG;
 
         // Will the increment not result in a wrap and not result in a pure collision?
         // This is most often condition so check first
-        if ( ( rxTail    != (rxQueue + UART3_CONFIG_RX_BYTEQ_LENGTH-1)) &&
+        if ( ( rxTail    != (rxQueue + UART2_CONFIG_RX_BYTEQ_LENGTH-1)) &&
              ((rxTail+1) != rxHead) )
         {
             rxTail++;
         } 
-        else if ( (rxTail == (rxQueue + UART3_CONFIG_RX_BYTEQ_LENGTH-1)) &&
+        else if ( (rxTail == (rxQueue + UART2_CONFIG_RX_BYTEQ_LENGTH-1)) &&
                   (rxHead !=  rxQueue) )
         {
             // Pure wrap no collision
@@ -234,26 +234,26 @@ void __attribute__ ((vector(_UART3_RX_VECTOR), interrupt(IPL2SOFT))) _UART3_RX( 
     }
 }
 
-void __attribute__ ((weak)) UART3_Receive_CallBack(void)
+void __attribute__ ((weak)) UART2_Receive_CallBack(void)
 {
 
 }
 
-void __attribute__ ((vector(_UART3_ERR_VECTOR), interrupt(IPL2SOFT))) _UART3_ERR( void )
+void __attribute__ ((vector(_UART2_ERR_VECTOR), interrupt(IPL1SOFT))) _UART2_ERR( void )
 {
-    if ((U3STAbits.OERR == 1))
+    if ((U2STAbits.OERR == 1))
     {
-        U3STACLR = _U3STA_OERR_MASK; 
+        U2STACLR = _U2STA_OERR_MASK; 
     }
     
-    IFS1CLR= 1 << _IFS1_U3EIF_POSITION;
+    IFS1CLR= 1 << _IFS1_U2EIF_POSITION;
 }
 
 /**
   Section: UART Driver Client Routines
 */
 
-uint8_t UART3_Read( void)
+uint8_t UART2_Read( void)
 {
     uint8_t data = 0;
 
@@ -265,16 +265,16 @@ uint8_t UART3_Read( void)
 
     rxHead++;
 
-    if (rxHead == (rxQueue + UART3_CONFIG_RX_BYTEQ_LENGTH))
+    if (rxHead == (rxQueue + UART2_CONFIG_RX_BYTEQ_LENGTH))
     {
         rxHead = rxQueue;
     }
     return data;
 }
 
-void UART3_Write( uint8_t byte)
+void UART2_Write( uint8_t byte)
 {
-    while(UART3_IsTxReady() == 0)
+    while(UART2_IsTxReady() == 0)
     {
     }
 
@@ -282,20 +282,20 @@ void UART3_Write( uint8_t byte)
 
     txTail++;
     
-    if (txTail == (txQueue + UART3_CONFIG_TX_BYTEQ_LENGTH))
+    if (txTail == (txQueue + UART2_CONFIG_TX_BYTEQ_LENGTH))
     {
         txTail = txQueue;
     }
 
-    IEC1bits.U3TXIE = 1;
+    IEC1bits.U2TXIE = 1;
 }
 
-bool UART3_IsRxReady(void)
+bool UART2_IsRxReady(void)
 {    
     return !(rxHead == rxTail);
 }
 
-bool UART3_IsTxReady(void)
+bool UART2_IsTxReady(void)
 {
     uint16_t size;
     uint8_t *snapshot_txHead = (uint8_t*)txHead;
@@ -306,22 +306,30 @@ bool UART3_IsTxReady(void)
     }
     else
     {
-        size = ( UART3_CONFIG_TX_BYTEQ_LENGTH - (txTail - snapshot_txHead) - 1 );
+        size = ( UART2_CONFIG_TX_BYTEQ_LENGTH - (txTail - snapshot_txHead) - 1 );
     }
     
     return (size != 0);
 }
 
-bool UART3_IsTxDone(void)
+bool UART2_IsTxDone(void)
 {
     if(txTail == txHead)
     {
-        return (bool)U3STAbits.TRMT;
+        return (bool)U2STAbits.TRMT;
     }
     
     return false;
 }
 
+void _mon_putc(char c) 
+{
+    while(UART2_IsTxReady() == false)
+    {
+    }
+  
+    UART2_Write(c);
+}
 
 /*******************************************************************************
 
@@ -330,14 +338,14 @@ bool UART3_IsTxDone(void)
 
 *******************************************************************************/
 
-static uint8_t UART3_RxDataAvailable(void)
+static uint8_t UART2_RxDataAvailable(void)
 {
     uint16_t size;
     uint8_t *snapshot_rxTail = (uint8_t*)rxTail;
     
     if (snapshot_rxTail < rxHead) 
     {
-        size = ( UART3_CONFIG_RX_BYTEQ_LENGTH - (rxHead-snapshot_rxTail));
+        size = ( UART2_CONFIG_RX_BYTEQ_LENGTH - (rxHead-snapshot_rxTail));
     }
     else
     {
@@ -352,7 +360,7 @@ static uint8_t UART3_RxDataAvailable(void)
     return size;
 }
 
-static uint8_t UART3_TxDataAvailable(void)
+static uint8_t UART2_TxDataAvailable(void)
 {
     uint16_t size;
     uint8_t *snapshot_txHead = (uint8_t*)txHead;
@@ -363,7 +371,7 @@ static uint8_t UART3_TxDataAvailable(void)
     }
     else
     {
-        size = ( UART3_CONFIG_TX_BYTEQ_LENGTH - (txTail - snapshot_txHead) - 1 );
+        size = ( UART2_CONFIG_TX_BYTEQ_LENGTH - (txTail - snapshot_txHead) - 1 );
     }
     
     if(size > 0xFF)
@@ -374,9 +382,9 @@ static uint8_t UART3_TxDataAvailable(void)
     return size;
 }
 
-unsigned int __attribute__((deprecated)) UART3_ReadBuffer( uint8_t *buffer ,  unsigned int numbytes)
+unsigned int __attribute__((deprecated)) UART2_ReadBuffer( uint8_t *buffer ,  unsigned int numbytes)
 {
-    unsigned int rx_count = UART3_RxDataAvailable();
+    unsigned int rx_count = UART2_RxDataAvailable();
     unsigned int i;
     
     if(numbytes < rx_count)
@@ -386,15 +394,15 @@ unsigned int __attribute__((deprecated)) UART3_ReadBuffer( uint8_t *buffer ,  un
     
     for(i=0; i<rx_count; i++)
     {
-        *buffer++ = UART3_Read();
+        *buffer++ = UART2_Read();
     }
     
     return rx_count;    
 }
 
-unsigned int __attribute__((deprecated)) UART3_WriteBuffer( uint8_t *buffer , unsigned int numbytes )
+unsigned int __attribute__((deprecated)) UART2_WriteBuffer( uint8_t *buffer , unsigned int numbytes )
 {
-    unsigned int tx_count = UART3_TxDataAvailable();
+    unsigned int tx_count = UART2_TxDataAvailable();
     unsigned int i;
     
     if(numbytes < tx_count)
@@ -404,38 +412,38 @@ unsigned int __attribute__((deprecated)) UART3_WriteBuffer( uint8_t *buffer , un
     
     for(i=0; i<tx_count; i++)
     {
-        UART3_Write(*buffer++);
+        UART2_Write(*buffer++);
     }
     
     return tx_count;  
 }
 
-UART3_TRANSFER_STATUS __attribute__((deprecated)) UART3_TransferStatusGet (void )
+UART2_TRANSFER_STATUS __attribute__((deprecated)) UART2_TransferStatusGet (void )
 {
-    UART3_TRANSFER_STATUS status = 0;
-    uint8_t rx_count = UART3_RxDataAvailable();
-    uint8_t tx_count = UART3_TxDataAvailable();
+    UART2_TRANSFER_STATUS status = 0;
+    uint8_t rx_count = UART2_RxDataAvailable();
+    uint8_t tx_count = UART2_TxDataAvailable();
     
     switch(rx_count)
     {
         case 0:
-            status |= UART3_TRANSFER_STATUS_RX_EMPTY;
+            status |= UART2_TRANSFER_STATUS_RX_EMPTY;
             break;
-        case UART3_CONFIG_RX_BYTEQ_LENGTH:
-            status |= UART3_TRANSFER_STATUS_RX_FULL;
+        case UART2_CONFIG_RX_BYTEQ_LENGTH:
+            status |= UART2_TRANSFER_STATUS_RX_FULL;
             break;
         default:
-            status |= UART3_TRANSFER_STATUS_RX_DATA_PRESENT;
+            status |= UART2_TRANSFER_STATUS_RX_DATA_PRESENT;
             break;
     }
     
     switch(tx_count)
     {
         case 0:
-            status |= UART3_TRANSFER_STATUS_TX_FULL;
+            status |= UART2_TRANSFER_STATUS_TX_FULL;
             break;
-        case UART3_CONFIG_RX_BYTEQ_LENGTH:
-            status |= UART3_TRANSFER_STATUS_TX_EMPTY;
+        case UART2_CONFIG_RX_BYTEQ_LENGTH:
+            status |= UART2_TRANSFER_STATUS_TX_EMPTY;
             break;
         default:
             break;
@@ -444,36 +452,36 @@ UART3_TRANSFER_STATUS __attribute__((deprecated)) UART3_TransferStatusGet (void 
     return status;    
 }
 
-uint8_t __attribute__((deprecated)) UART3_Peek(uint16_t offset)
+uint8_t __attribute__((deprecated)) UART2_Peek(uint16_t offset)
 {
     uint8_t *peek = rxHead + offset;
     
-    while(peek > (rxQueue + UART3_CONFIG_RX_BYTEQ_LENGTH))
+    while(peek > (rxQueue + UART2_CONFIG_RX_BYTEQ_LENGTH))
     {
-        peek -= UART3_CONFIG_RX_BYTEQ_LENGTH;
+        peek -= UART2_CONFIG_RX_BYTEQ_LENGTH;
     }
     
     return *peek;
 }
 
-bool __attribute__((deprecated)) UART3_ReceiveBufferIsEmpty (void)
+bool __attribute__((deprecated)) UART2_ReceiveBufferIsEmpty (void)
 {
-    return (UART3_RxDataAvailable() == 0);
+    return (UART2_RxDataAvailable() == 0);
 }
 
-bool __attribute__((deprecated)) UART3_TransmitBufferIsFull(void)
+bool __attribute__((deprecated)) UART2_TransmitBufferIsFull(void)
 {
-    return (UART3_TxDataAvailable() == 0);
+    return (UART2_TxDataAvailable() == 0);
 }
 
-uint32_t __attribute__((deprecated)) UART3_StatusGet (void)
+uint32_t __attribute__((deprecated)) UART2_StatusGet (void)
 {
-    return U3STA;
+    return U2STA;
 }
 
-unsigned int __attribute__((deprecated)) UART3_TransmitBufferSizeGet(void)
+unsigned int __attribute__((deprecated)) UART2_TransmitBufferSizeGet(void)
 {
-    if(UART3_TxDataAvailable() != 0)
+    if(UART2_TxDataAvailable() != 0)
     { 
         if(txHead > txTail)
         {
@@ -481,15 +489,15 @@ unsigned int __attribute__((deprecated)) UART3_TransmitBufferSizeGet(void)
         }
         else
         {
-            return((UART3_CONFIG_TX_BYTEQ_LENGTH - (txTail - txHead)) - 1);
+            return((UART2_CONFIG_TX_BYTEQ_LENGTH - (txTail - txHead)) - 1);
         }
     }
     return 0;
 }
 
-unsigned int __attribute__((deprecated)) UART3_ReceiveBufferSizeGet(void)
+unsigned int __attribute__((deprecated)) UART2_ReceiveBufferSizeGet(void)
 {
-    if(UART3_RxDataAvailable() != 0)
+    if(UART2_RxDataAvailable() != 0)
     {
         if(rxHead > rxTail)
         {
@@ -497,23 +505,23 @@ unsigned int __attribute__((deprecated)) UART3_ReceiveBufferSizeGet(void)
         }
         else
         {
-            return((UART3_CONFIG_RX_BYTEQ_LENGTH - (rxTail - rxHead)) - 1);
+            return((UART2_CONFIG_RX_BYTEQ_LENGTH - (rxTail - rxHead)) - 1);
         } 
     }
     return 0;
 }
 
-void __attribute__((deprecated)) UART3_Enable(void)
+void __attribute__((deprecated)) UART2_Enable(void)
 {
-    U3STASET = _U3STA_UTXEN_MASK;
-    U3STASET = _U3STA_URXEN_MASK;
-    U3MODESET = _U3MODE_ON_MASK;
+    U2STASET = _U2STA_UTXEN_MASK;
+    U2STASET = _U2STA_URXEN_MASK;
+    U2MODESET = _U2MODE_ON_MASK;
 }
 
-void __attribute__((deprecated)) UART3_Disable(void)
+void __attribute__((deprecated)) UART2_Disable(void)
 {
-    U3STACLR = _U3STA_UTXEN_MASK;
-    U3STACLR = _U3STA_URXEN_MASK;
-    U3MODECLR = _U3MODE_ON_MASK;
+    U2STACLR = _U2STA_UTXEN_MASK;
+    U2STACLR = _U2STA_URXEN_MASK;
+    U2MODECLR = _U2MODE_ON_MASK;
 }
 

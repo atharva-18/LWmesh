@@ -66,7 +66,7 @@ inline void set_timer0base(uint16_t* timer, uint16_t tval){
     Exit_Timer0_Critical();
 }
 
-void UART3_Transmit_CallBack ( void )
+void UART2_Transmit_CallBack ( void )
 {
     TXEN_SetHigh();
 }

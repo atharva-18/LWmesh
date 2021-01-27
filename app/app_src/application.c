@@ -41,6 +41,7 @@ Copyright 2020 Samuel Ramrajkar
 #endif
 #if (__32MM0256GPM048__)
 #include "uart3.h"
+#include "uart2.h"
 #include "pin_manager.h"
 #endif
 
@@ -2456,7 +2457,7 @@ inline void application(void){
     //start_loop_timer();
     start_loop_timer();
 #if (__32MM0256GPM048__)
-    if(true == UART3_IsTxDone())
+    if(true == UART2_IsTxDone())
     {
         TXEN_SetLow();
     }

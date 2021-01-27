@@ -36,6 +36,7 @@
         <itemPath>mcc_generated_files/crc.h</itemPath>
         <itemPath>mcc_generated_files/dma.h</itemPath>
         <itemPath>mcc_generated_files/tmr3.h</itemPath>
+        <itemPath>mcc_generated_files/uart2.h</itemPath>
       </logicalFolder>
       <logicalFolder name="modbus" displayName="modbus" projectFiles="true">
         <logicalFolder name="ascii" displayName="ascii" projectFiles="true">
@@ -152,6 +153,7 @@
         <itemPath>mcc_generated_files/dma.c</itemPath>
         <itemPath>mcc_generated_files/crc.c</itemPath>
         <itemPath>mcc_generated_files/tmr3.c</itemPath>
+        <itemPath>mcc_generated_files/uart2.c</itemPath>
       </logicalFolder>
       <logicalFolder name="modbus" displayName="modbus" projectFiles="true">
         <logicalFolder name="ascii" displayName="ascii" projectFiles="true">

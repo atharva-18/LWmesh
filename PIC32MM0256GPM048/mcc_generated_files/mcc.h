@@ -52,14 +52,15 @@
 #include <stdbool.h>
 
 #include "coretimer.h"
-#include "dma.h"
-#include "crc.h"
-#include "spi2.h"
+#include "uart3.h"
+#include "uart2.h"
 #include "interrupt_manager.h"
 #include "exceptions.h"
-#include "uart3.h"
-#include "watchdog.h"
 #include "tmr3.h"
+#include "dma.h"
+#include "crc.h"
+#include "watchdog.h"
+#include "spi2.h"
 
 #warning "This file will be removed in future MCC releases. Use system.h instead."
 
