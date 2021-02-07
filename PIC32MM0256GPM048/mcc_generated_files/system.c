@@ -84,14 +84,15 @@
 #include "clock.h"
 #include "system.h"
 #include "coretimer.h"
-#include "uart3.h"
-#include "uart2.h"
 #include "interrupt_manager.h"
 #include "exceptions.h"
-#include "tmr3.h"
+#include "spi2.h"
+#include "uart2.h"
 #include "dma.h"
 #include "crc.h"
-#include "spi2.h"
+#include "memory/flash.h"
+#include "uart3.h"
+#include "tmr3.h"
 
 void SYSTEM_Initialize(void)
 {

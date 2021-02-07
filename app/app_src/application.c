@@ -1752,7 +1752,9 @@ static void loadMACAddr(void)
     }
     #endif  
     #if (__32MM0256GPM048__)
-    memcpy(EUIDbyte, (uint8_t*)0xBFC41840, sizeof(EUIDbyte));
+    *(uint32_t*)&EUIDbyte[0] = UDID5;
+    *(uint32_t*)&EUIDbyte[4] = UDID4;
+    *(uint32_t*)&EUIDbyte[8] = UDID3;
     #endif   
     
 #ifdef MBRTU
