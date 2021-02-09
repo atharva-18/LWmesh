@@ -25,29 +25,32 @@ Copyright 2020 Samuel Ramrajkar
 #endif
 
 uint8_t DATAEE_ReadByte_Platform(uint16_t addr){
-    uint8_t copy1, copy2, copy3;
+    uint8_t copy1;
+    uint8_t copy2;
+    uint8_t copy3;
     copy1 = DATAEE_ReadByte(addr);
     copy2 = DATAEE_ReadByte(addr + EEPROMback1);
     copy3 = DATAEE_ReadByte(addr + EEPROMback2);
+    uint8_t return_copy;
     
     //Start voting logic
     if((copy1 == copy2) && (copy2 == copy3)){
-        return copy1;
+        return_copy = copy1;
     }
     else if((copy1 == copy2) && (copy2 != copy3)){
         //Fix copy3
         DATAEE_WriteByte(addr + EEPROMback2, copy1);
-        return copy1;
+        return_copy = copy1;
     }
     else if((copy1 != copy2) && (copy2 == copy3)){
         //Fix copy1
         DATAEE_WriteByte(addr , copy2);
-        return copy2;
+        return_copy = copy2;
     }
     else if((copy1 == copy3) && (copy2 != copy3)){
         //Fix copy2
         DATAEE_WriteByte(addr + EEPROMback1, copy1);
-        return copy1;
+        return_copy = copy1;
     }
     else{
         //All three are unequal. Assume copy1 is best
@@ -55,7 +58,7 @@ uint8_t DATAEE_ReadByte_Platform(uint16_t addr){
         DATAEE_WriteByte(addr + EEPROMback1, copy1);
         DATAEE_WriteByte(addr + EEPROMback2, copy1);
     }
-    return copy1;
+    return return_copy;
 }
 
 void DATAEE_WriteByte_Platform(uint16_t addr, uint8_t data){
@@ -66,82 +69,82 @@ void DATAEE_WriteByte_Platform(uint16_t addr, uint8_t data){
 }
 
 void sync_eeprom(void){
-    if(!eeprom_write_flags.flag_master){
-        return;
-    }
-    //Atleast one flag is set to sink data back to EEPROM
-    if(eeprom_write_flags.flag_bootload){
-        DATAEE_WriteByte_Platform(REQBootLoad, 0xAA);
-        eeprom_write_flags.flag_bootload = 0;
-    }
-    else if(eeprom_write_flags.flag_appkey){
-        for(uint8_t i = 0; i < sizeof(aes_key); i++){
-            DATAEE_WriteByte_Platform((AESkey0 + i),aes_key[i]);
+    if(0 != eeprom_write_flags.flag_master){
+        //Atleast one flag is set to sink data back to EEPROM
+        if(0 != eeprom_write_flags.flag_bootload){
+            DATAEE_WriteByte_Platform(REQBootLoad, 0xAA);
+            eeprom_write_flags.flag_bootload = 0;
         }
-        eeprom_write_flags.flag_appkey = 0;
-    }
-    else if(eeprom_write_flags.flag_netkey){
-        for(uint8_t i = 0; i < sizeof(net_key); i++){
-            DATAEE_WriteByte_Platform((NETkey0 + i),net_key[i]);
+        else if(0 != eeprom_write_flags.flag_appkey){
+            for(uint8_t i = 0; i < sizeof(aes_key); i++){
+                DATAEE_WriteByte_Platform((AESkey0 + i),aes_key[i]);
+            }
+            eeprom_write_flags.flag_appkey = 0;
         }
-        eeprom_write_flags.flag_netkey = 0;
-    }
-    else if(eeprom_write_flags.flag_netid){
-        DATAEE_WriteByte_Platform(networkID,(pan_id >> 8) & 0xFF);
-        DATAEE_WriteByte_Platform(networkID_LSB,pan_id & 0xFF);
-        eeprom_write_flags.flag_netid = 0;
-    }
-    else if(eeprom_write_flags.flag_sink){
-        DATAEE_WriteByte_Platform(sinkAddrEE0, sinkAddr0);
-        DATAEE_WriteByte_Platform(sinkAddrEE0, sinkAddr1);
-        eeprom_write_flags.flag_sink = 0;
-    }
-    else if(eeprom_write_flags.flag_radio_ch){
-        DATAEE_WriteByte_Platform(radioChannel, channel);
-        eeprom_write_flags.flag_radio_ch = 0;
-    }
-    else if(eeprom_write_flags.flag_tx_power){
-        DATAEE_WriteByte_Platform(txPowerSetting, TXPower);
-        eeprom_write_flags.flag_tx_power = 0;
-    }
-    else if(eeprom_write_flags.flag_rssi){
-        DATAEE_WriteByte_Platform(RSSITargetSetting, RSSITarget);
-        eeprom_write_flags.flag_rssi = 0;
-    }
-    else if(eeprom_write_flags.flag_uart_baud){
-        DATAEE_WriteByte_Platform(UARTBaud, uart_baud_rate);
-        eeprom_write_flags.flag_uart_baud = 0;
-    }
-    else if(eeprom_write_flags.flag_uart_parity){
-        DATAEE_WriteByte_Platform(UARTParity, uart_parity);
-        eeprom_write_flags.flag_uart_parity = 0;
-    }
-    else if(eeprom_write_flags.flag_sf){
-        DATAEE_WriteByte_Platform(SF, current_sf);
-        eeprom_write_flags.flag_sf = 0;
-    }
-    else if(eeprom_write_flags.flag_mbaddr){
-#ifdef MBRTU
-        DATAEE_WriteByte_Platform(MBADDR, mb_rtu_addr);
-#endif
-        eeprom_write_flags.flag_mbaddr = 0;
-    }
-    else if(eeprom_write_flags.flag_serial){
-        eeprom_write_flags.flag_serial = 0;
-    }
-    else if(eeprom_write_flags.flag_good_rssi){
-        DATAEE_WriteByte_Platform(RSSI_GOOD, PHY_Get_Packet_Rssi_Threshold());
-        eeprom_write_flags.flag_good_rssi = 0;
-    }
-    else if(eeprom_write_flags.resv){
-        eeprom_write_flags.resv = 0;
-    }
-    else{
-        eeprom_write_flags.flag_master = 0;
+        else if(0 != eeprom_write_flags.flag_netkey){
+            for(uint8_t i = 0; i < sizeof(net_key); i++){
+                DATAEE_WriteByte_Platform((NETkey0 + i),net_key[i]);
+            }
+            eeprom_write_flags.flag_netkey = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_netid){
+            DATAEE_WriteByte_Platform(networkID,(pan_id >> 8) & 0xFF);
+            DATAEE_WriteByte_Platform(networkID_LSB,pan_id & 0xFF);
+            eeprom_write_flags.flag_netid = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_sink){
+            DATAEE_WriteByte_Platform(sinkAddrEE0, sinkAddr0);
+            DATAEE_WriteByte_Platform(sinkAddrEE0, sinkAddr1);
+            eeprom_write_flags.flag_sink = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_radio_ch){
+            DATAEE_WriteByte_Platform(radioChannel, channel);
+            eeprom_write_flags.flag_radio_ch = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_tx_power){
+            DATAEE_WriteByte_Platform(txPowerSetting, TXPower);
+            eeprom_write_flags.flag_tx_power = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_rssi){
+            DATAEE_WriteByte_Platform(RSSITargetSetting, RSSITarget);
+            eeprom_write_flags.flag_rssi = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_uart_baud){
+            DATAEE_WriteByte_Platform(UARTBaud, uart_baud_rate);
+            eeprom_write_flags.flag_uart_baud = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_uart_parity){
+            DATAEE_WriteByte_Platform(UARTParity, uart_parity);
+            eeprom_write_flags.flag_uart_parity = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_sf){
+            DATAEE_WriteByte_Platform(SF, current_sf);
+            eeprom_write_flags.flag_sf = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_mbaddr){
+    #ifdef MBRTU
+            DATAEE_WriteByte_Platform(MBADDR, mb_rtu_addr);
+    #endif
+            eeprom_write_flags.flag_mbaddr = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_serial){
+            eeprom_write_flags.flag_serial = 0;
+        }
+        else if(0 != eeprom_write_flags.flag_good_rssi){
+            DATAEE_WriteByte_Platform(RSSI_GOOD, PHY_Get_Packet_Rssi_Threshold());
+            eeprom_write_flags.flag_good_rssi = 0;
+        }
+        else if(0 != eeprom_write_flags.resv){
+            eeprom_write_flags.resv = 0;
+        }
+        else{
+            eeprom_write_flags.flag_master = 0;
+        }   
     }
 }
 
 uint8_t set_eeprom_sync(uint8_t flag_type){
+    uint8_t return_param = E_OK;
     switch(flag_type){
         case EEPROM_BOOTLOADER:
             eeprom_write_flags.flag_bootload = 1; 
@@ -186,8 +189,9 @@ uint8_t set_eeprom_sync(uint8_t flag_type){
             eeprom_write_flags.flag_good_rssi = 1;
             break;
         default:
-            return ILLEGALPARAMETER;            
+            return_param = ILLEGALPARAMETER; 
+            break;
     }
     eeprom_write_flags.flag_master = 1;
-    return E_OK;
+    return return_param;
 }

@@ -29,7 +29,7 @@ void ledInit(void)
     
     //Now load the version blink activity on the queue
     //Initial off period
-    queueLedEvent(0,2000);
+    (void*)queueLedEvent(0,2000);
     
     //Blink major
     for(uint8_t i = 0; i < FirmwareVersionMajor; i++)
@@ -76,7 +76,7 @@ void handle_led_events(void)
             struct ledEvent temp;
             CircularBufferPopFront(&ledtasksbuf,&temp);
             //Check if it was a zero time event
-            if(0 == temp.eventDuration){
+            if(0u == temp.eventDuration){
                 //Turn LED on and exit
                 LED_SetLow();
                 return;
@@ -99,7 +99,7 @@ void handle_led_events(void)
 void queue_serial_led_event(void)
 {
     queueLedEvent(0,400);
-    for(uint8_t i = 0; i < 2; i++)
+    for(uint8_t i = 0; i < 2u; i++)
     {
         queueLedEvent(1,100);
         queueLedEvent(0,100);
@@ -111,7 +111,7 @@ void queue_serial_led_event(void)
 void queue_tx_led_event(void)
 {    
     queueLedEvent(0,400);
-    for(uint8_t i = 0; i < 2; i++)
+    for(uint8_t i = 0; i < 2u; i++)
     {
         queueLedEvent(1,100);
         queueLedEvent(0,100);
